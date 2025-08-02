@@ -1,0 +1,112 @@
+﻿@model CISApps.Models.Searchs
+
+@{
+    ViewData["Title"] = "Index";
+    string d_none = "";
+    if (string.IsNullOrEmpty(ViewData["error"]?.ToString() ?? "")) d_none = "d-none";
+    int i = 0;
+    int total = (Model?.people?.transport?.Property1?.Count() ?? 0);
+}
+
+<div class="h1">
+    ข้อมูลยานพาหนะ
+</div>
+
+<div class="card">
+    <div class="card-header bg-light">
+        <span class="form-label">ค้นหาด้วยเลขประจำตัวประชาชน</span>
+        <span class="col-3"><input name="spid" id="spid" value="@(Model?.people?.pop?.pid.ToString() ?? ((api.pid_test==0L)?"":api.pid_test.ToString()))" class="pid form-control d-inline-block" style="width: 25%;" /></span>
+        <span><button type="button" class="btn btn-primary" onclick="searchTransport()">ค้นหา</button></span>
+    </div>
+    <div class="card-body" id="ckan">
+        <div id="errorinfo" class="text-center bg-danger text-white rounded @d_none">
+            @ViewData["error"]
+        </div>
+        @do
+        {
+            @if (i > 0)
+            {
+                <hr />
+            }
+            <span class="col-2 d-inline-block align-top">วันที่จดทะเบียน</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.regDate ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ประเภทรถ</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.vehTypeDesc ?? "-")</span>
+            <br />
+
+            <br />
+            <span class="col-2 d-inline-block align-top">เลขประจำตัวประชาชน/เลขนิติบุคคล ผู้ถือกรรมสิทธิ์</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.docNo1 ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ผู้ถือกรรมสิทธิ์</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.owner1 ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ที่อยู่ผู้ถือกรรมสิทธิ์</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.addressOwner1 ?? "-")</span>
+            <br />
+
+            <br />
+            <span class="col-2 d-inline-block align-top">เลขประจำตัวประชาชน/เลขนิติบุคคล ผู้ครอบครอง</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.docNo2 ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ผู้ครอบครอง</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.owner2 ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ที่อยู่ผู้ครอบครอง</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.addressOwner2 ?? "-")</span>
+            <br />
+
+            <br />
+            <span class="col-2 d-inline-block align-top">หมวดรถ</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.plate1 ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">เลขทะเบียน</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.plate2 ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">น้ำหนักรถ</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.wgtCar ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">เลขตัวรถ</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.numBody ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">เลขเครื่องยนต์</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.numEng ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">สี</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.carChkMasColorList[0].carChkMasColor.colorDesc ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">แบบ</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.modelName ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ยี่ห้อรถ</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.brnDesc ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ยี่ห้อเครื่องยนต์</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.engBrnDesc ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">สถานะรถ</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.carStatus ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">จำนวนซีซี</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.cc ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">จำนวนสูบ</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.cly ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">เชื้อเพลิง</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.fuelDesc ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">สถานะการอายัด (H อายัด)</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.holdFlag ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ลักษณะ/มาตรฐานรถ</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.kindDesc ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">จังหวัด</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.offLocCode ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">วันที่สิ้นภาษี</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transport?.Property1[i]?.getVehicleInfoOutput?.expDate ?? "-")</span>
+            <br />
+            
+            i++;
+        } while (i < total);
+    </div>
+</div>
+<script>
+    async function searchTransport() {
+        try {
+            var spid = document.getElementById('spid').value
+            spid = spid.replace(/-/g, '').trim()
+            while (spid.length < 13) {
+                spid = '0' + spid
+            }
+            if (await runTransport(spid)) {
+                document.getElementById("xyspid").value = spid;
+                document.getElementById('flk').submit()
+            }
+        } catch (error) {
+            document.getElementById('errorinfo').innerHTML = `พบปัญหา ${error}`
+        }
+    }
+</script>

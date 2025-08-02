@@ -1,0 +1,62 @@
+﻿@model CISApps.Models.Searchs
+
+@{
+    ViewData["Title"] = "Index";
+    string d_none = "";
+    if (string.IsNullOrEmpty(ViewData["error"]?.ToString() ?? "")) d_none = "d-none";
+}
+<div class="h1">
+    ข้อมูลหนังสือเดินทาง
+</div>
+
+<div class="card">
+    <div class="card-header bg-light">
+        <span class="form-label">ค้นหาด้วยเลขประจำตัวประชาชน</span>
+        <span class="col-3">
+            <input name="spid" id="spid" value="@(Model?.people?.pop?.pid.ToString() ?? ((api.pid_test==0L)?"":api.pid_test.ToString()))" class="pid form-control d-inline-block" style="width: 25%;" /></span>
+        <span><button type="button" class="btn btn-primary" onclick="searchBorderPass()">ค้นหา</button></span>
+    </div>
+    <div class="card-body" id="ckan">
+        <div id="errorinfo" class="text-center bg-danger text-white rounded @d_none">
+            @ViewData["error"]
+        </div>
+        <span class="col-2 d-inline-block align-top">เลขที่หนังสือเดินทาง</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.borderpass?.tdtno ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">ประเภทการเดินทาง<br />(ขาเข้า/ขาออก)</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.borderpass?.inouttype ?? "-")</span>
+        <span class="col-2 d-inline-block align-top ">ประเภทพาหนะ</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.borderpass?.convenm ?? "-")</span>
+        <span class="col-2 d-inline-block align-top ">หมายเลขทะเบียนพาหนะ</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.borderpass?.convregno ?? "-")</span>
+        <span class="col-2 d-inline-block align-top ">วัน-เวลาเดินทาง</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.borderpass?.inoutdate ?? "-")</span>
+        <span class="col-2 d-inline-block align-top ">ด่านตรวจอนุญาต<br />การเดินทาง</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.borderpass?.depttnm ?? "-")</span>
+        <br />
+        <span class="col-2 d-inline-block align-top ">ชื่อ สกุล ไทย</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.borderpass?.tfullname ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">ชื่อ สกุล อังกฤษ</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.borderpass?.efullname ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">สัญชาติ</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.borderpass?.nationenm ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">เพศ</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.borderpass?.sex ?? "-")</span>
+    </div>
+</div>
+<script>
+    async function searchBorderPass() {
+        try {
+            var spid = document.getElementById('spid').value
+            spid = spid.replace(/-/g, '').trim()
+            while (spid.length < 13) {
+                spid = '0' + spid
+            }
+            if (await runBorderPass(spid)) {
+                document.getElementById("xyspid").value = spid;
+                document.getElementById('flk').submit()
+            }
+        } catch (error) {
+            document.getElementById('errorinfo').innerHTML = `พบปัญหา ${error}`
+        }
+    }
+</script>

@@ -1,0 +1,70 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "docker-build",
+			"label": "docker-build: debug",
+			"dependsOn": [
+				"build"
+			],
+			"dockerBuild": {
+				"tag": "cis:dev",
+				"target": "base",
+				"dockerfile": "${workspaceFolder}/cis/Dockerfile",
+				"context": "${workspaceFolder}",
+				"pull": true
+			},
+			"netCore": {
+				"appProject": "${workspaceFolder}/cis/cis.csproj"
+			}
+		},
+		{
+			"type": "docker-build",
+			"label": "docker-build: release",
+			"dependsOn": [
+				"build"
+			],
+			"dockerBuild": {
+				"tag": "cis:latest",
+				"dockerfile": "${workspaceFolder}/cis/Dockerfile",
+				"context": "${workspaceFolder}",
+				"platform": {
+					"os": "windows",
+					"architecture": "amd64"
+				},
+				"pull": true
+			},
+			"netCore": {
+				"appProject": "${workspaceFolder}/cis/cis.csproj"
+			}
+		},
+		{
+			"type": "docker-run",
+			"label": "docker-run: debug",
+			"dependsOn": [
+				"docker-build: debug"
+			],
+			"dockerRun": {
+				"os": "Windows"
+			},
+			"netCore": {
+				"appProject": "${workspaceFolder}/cis/cis.csproj",
+				"enableDebugging": true,
+				"configureSsl": false
+			}
+		},
+		{
+			"type": "docker-run",
+			"label": "docker-run: release",
+			"dependsOn": [
+				"docker-build: release"
+			],
+			"dockerRun": {
+				"os": "Windows"
+			},
+			"netCore": {
+				"appProject": "${workspaceFolder}/cis/cis.csproj"
+			}
+		}
+	]
+}

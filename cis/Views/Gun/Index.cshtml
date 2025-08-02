@@ -1,0 +1,104 @@
+﻿@model CISApps.Models.Searchs
+
+@{
+    ViewData["Title"] = "Index";
+    string d_none = "";
+    if (string.IsNullOrEmpty(ViewData["error"]?.ToString() ?? "")) d_none = "d-none";
+    int i = 0;
+    int total = (Model?.people?.guncard?.total ?? 0);
+}
+
+<div class="h1">
+    ข้อมูลใบอนุญาตขอมีอาวุธ ป.4
+</div>
+
+<div class="card">
+    <div class="card-header bg-light">
+        <span class="form-label">ค้นหาด้วยเลขประจำตัวประชาชน</span>
+        <span class="col-3"><input name="spid" id="spid" value="@(Model?.people?.pop?.pid.ToString() ?? ((api.pid_test==0L)?"":api.pid_test.ToString()))" class="pid form-control d-inline-block" style="width: 25%;" /></span>
+        <span><button type="button" class="btn btn-primary" onclick="searchGunCard()">ค้นหา</button></span>
+    </div>
+    <div class="card-body" id="ckan">
+        <div id="errorinfo" class="text-center bg-danger text-white rounded @d_none">
+            @ViewData["error"]
+        </div>
+        @do
+        {
+            @if (i > 0)
+            {
+                <hr />
+            }
+            <span class="col-2 d-inline-block align-top">เลขที่ใบอนุญาต</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.guncard?.allName[i]?.docID ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">วันที่ออกใบอนุญาต</span>
+            <span class="col-3 d-inline-block align-top text-primary">@Tools.getDateTH(Model?.people?.guncard?.allName[i]?.docDate)</span>
+            <span class="col-2 d-inline-block align-top">สำนักทะเบียนที่ออกใบอนุญาต / ใบแทน</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.guncard?.allName[i]?.docPlaceDesc ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">จังหวัดที่ออกใบอนุญาต / ใบแทน</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.guncard?.allName[i]?.docPlaceProvince ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ชนิดอาวุธปืน</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.guncard?.allName[i]?.gunCharacteristic ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">เครื่องหมายทะเบียนปืน</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.guncard?.allName[i]?.gunRegistrationId ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">เลขหมายประจำปืน</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.guncard?.allName[i]?.gunSerialNo ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ขนาดอาวุธปืน</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.guncard?.allName[i]?.gunSize ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ประเภทอาวุธ</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.guncard?.allName[i]?.gunType ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ผู้ผลิต</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.guncard?.allName[i]?.gunProduct ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ประเภทผู้ยื่นคำร้อง</span>
+            <span class="col-3 d-inline-block align-top text-primary">@((Model?.people?.guncard?.allName[i]?.applicantType == 1 ? "นิติบุคคคล" : (Model?.people?.guncard?.allName[i]?.applicantType == 2 ? "บุคคลธรรมดา" : null)) ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ชื่อนิติบุคคล</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.guncard?.allName[i]?.businessName ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ประเภทนิติบุคคล</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.guncard?.allName[i]?.businessType ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ชื่อนามสกุลผู้ลงนามใบอนุญาต</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.guncard?.allName[i]?.signFullName ?? "-")</span>
+            <br />
+            <br />
+            <span class="col-12 d-inline-block fw-bold">ข้อมูลผู้ได้รับอนุญาตคนที่ 1</span>
+            <span class="col-4 d-inline-block align-top">เลขประจำตัวประชาชนผู้รับใบอนุญาต / เลขประจำตัวประชาชนตัวแทนนิติบุคคล</span>
+            <span class="col-3 d-inline-block align-top text-primary">@((Model?.people?.guncard?.allName[i]?.personalId > 0 ? Model?.people?.guncard?.allName[i]?.personalId.ToString() : null) ?? "-")</span>
+            <span class="col-1 d-inline-block align-top">เพศ</span>
+            <span class="col-1 d-inline-block align-top text-primary">@(Model?.people?.guncard?.allName[i]?.genderDesc ?? "-")</span>
+            <br />
+            <span class="col-2 d-inline-block align-top">ชื่อ สกุล</span>
+            <span class="col-8 d-inline-block align-top text-primary">@(Model?.people?.guncard?.allName[i]?.fullNameAndRank ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ที่อยู่</span>
+            <span class="col-8 d-inline-block align-top text-primary">@Tools.GenAddress((Model?.people?.guncard?.allName[i]?.hno  ?? ""), "0", (Model?.people?.guncard?.allName[i]?.trok ?? ""), (Model?.people?.guncard?.allName[i]?.soi  ?? ""), (Model?.people?.guncard?.allName[i]?.thanon ?? ""), (Model?.people?.guncard?.allName[i]?.districtDesc ?? ""), (Model?.people?.guncard?.allName[i]?.amphorDesc ?? ""), (Model?.people?.guncard?.allName[i]?.provinceDesc ?? ""), (Model?.people?.guncard?.allName[i]?.hidRcodeDesc ?? ""))</span>
+            <br />
+            <br />
+            <span class="col-12 d-inline-block fw-bold">ข้อมูลผู้ได้รับอนุญาตคนที่ 2</span>
+            <span class="col-4 d-inline-block align-top">เลขประจำตัวประชาชนผู้รับใบอนุญาต / เลขประจำตัวประชาชนตัวแทนนิติบุคคล</span>
+            <span class="col-3 d-inline-block align-top text-primary">@((Model?.people?.guncard?.allName[i]?.personalId2 > 0 ? Model?.people?.guncard?.allName[i]?.personalId2.ToString() : null) ?? "-")</span>
+            <span class="col-1 d-inline-block align-top">เพศ</span>
+            <span class="col-1 d-inline-block align-top text-primary">@(Model?.people?.guncard?.allName[i]?.genderDesc2 ?? "-")</span>
+            <br />
+            <span class="col-2 d-inline-block align-top">ชื่อ สกุล</span>
+            <span class="col-8 d-inline-block align-top text-primary">@(Model?.people?.guncard?.allName[i]?.fullNameAndRank2 ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ที่อยู่</span>
+            <span class="col-8 d-inline-block align-top text-primary">@Tools.GenAddress((Model?.people?.guncard?.allName[i]?.hno2  ?? ""), "0", (Model?.people?.guncard?.allName[i]?.trok2 ?? ""), (Model?.people?.guncard?.allName[i]?.soi2  ?? ""), (Model?.people?.guncard?.allName[i]?.thanon2 ?? ""), (Model?.people?.guncard?.allName[i]?.districtDesc2 ?? ""), (Model?.people?.guncard?.allName[i]?.amphorDesc2 ?? ""), (Model?.people?.guncard?.allName[i]?.provinceDesc2 ?? ""), (Model?.people?.guncard?.allName[i]?.hidRcodeDesc2 ?? ""))</span>
+            
+            i++;
+        } while (i < total);
+    </div>
+</div>
+<script>
+    async function searchGunCard() {
+        try {
+            var spid = document.getElementById('spid').value
+            spid = spid.replace(/-/g, '').trim()
+            while (spid.length < 13) {
+                spid = '0' + spid
+            }
+            if (await runGunBp4(spid)) {
+                document.getElementById("xyspid").value = spid;
+                document.getElementById('flk').submit()
+            }
+        } catch (error) {
+            document.getElementById('errorinfo').innerHTML = `พบปัญหา ${error}`
+        }
+    }
+</script>

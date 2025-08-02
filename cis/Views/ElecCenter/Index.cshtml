@@ -1,0 +1,129 @@
+﻿@model CISApps.Models.Searchs
+
+@{
+    ViewData["Title"] = "Index";
+    string d_none = "";
+    if (string.IsNullOrEmpty(ViewData["error"]?.ToString() ?? "")) d_none = "d-none";
+    int i = 0;
+    int total = int.Parse(Model?.people?.eleccenter?.rowCount.ToString() ?? "0");
+}
+
+<div class="h1">
+    ข้อมูลไฟฟ้านครหลวง
+</div>
+
+<div class="card">
+    <div class="card-header bg-light">
+        <span class="form-label">ค้นหาด้วยเลขประจำตัวประชาชน</span>
+        <span class="col-3"><input name="spid" id="spid" value="@(Model?.people?.pop?.pid.ToString() ?? ((api.pid_test==0L)?"":api.pid_test.ToString()))" class="pid form-control d-inline-block" style="width: 25%;" /></span>
+        <span><button type="button" class="btn btn-primary" onclick="searchElection()">ค้นหา</button></span>
+    </div>
+    <div class="card-body" id="ckan">
+        <div id="errorinfo" class="text-center bg-danger text-white rounded @d_none">
+            @ViewData["error"]
+        </div>
+        @do
+        {
+            @if (i > 0)
+            {
+                <hr />
+            }
+            if (total > 0)
+            {
+                var ci = (Model?.people?.eleccenter?.customerInfo[i] ?? new());
+
+                <span class="col-2 d-inline-block align-top">หมายเลขบัญชีแสดงสัญญา</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ci?.contractNumber ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">หมายเลขเครื่องวัด</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ci?.installationNumber ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">คำนำหน้าชื่อ</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ci?.title ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">ชื่อตัว</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ci?.name1 ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">ชื่อกลาง หรือ นามสกุล</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ci?.name2 ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">นามสกุล หรือ ชื่ออื่น ๆ</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ci?.name3 ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">รายละเอียดเกี่ยวกับบ้านอื่นๆ</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ci?.houseSub ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">บ้านเลขที่ </span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ci?.houseNum1 ?? ci?.houseNum2 ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">ชั้น</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ci?.floor ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">ชื่อหมู่บ้าน</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ci?.village ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">ซอย</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ci?.soi ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">ถนน</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ci?.street ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">แขวง</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ci?.subDistrict ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">เขต</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ci?.district ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">จังหวัด</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ci?.province ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">รหัสไปรษณีย์</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ci?.postalCode ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">ประเทศ</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ci?.country ?? "-")</span>
+            }
+            else
+            {
+
+                <span class="col-2 d-inline-block align-top">หมายเลขบัญชีแสดงสัญญา</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">หมายเลขเครื่องวัด</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">คำนำหน้าชื่อ</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">ชื่อตัว</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">ชื่อกลาง</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">นามสกุล</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">รายละเอียดเกี่ยวกับบ้านอื่นๆ</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">บ้านเลขที่ </span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">ชั้น</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">ชื่อหมู่บ้าน</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">ซอย</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">ถนน</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">แขวง</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">เขต</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">จังหวัด</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">รหัสไปรษณีย์</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">ประเทศ</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+            }
+
+            i++;
+        } while (i < total);
+    </div>
+</div>
+<script>
+    async function searchElection() {
+        try {
+            var spid = document.getElementById('spid').value
+            spid = spid.replace(/-/g, '').trim()
+            while (spid.length < 13) {
+                spid = '0' + spid
+            }
+            if (await runElectricCenter(spid)) {
+                document.getElementById("xyspid").value = spid;
+                document.getElementById('flk').submit()
+            }
+        } catch (error) {
+            document.getElementById('errorinfo').innerHTML = `พบปัญหา ${error}`
+        }
+    }
+</script>

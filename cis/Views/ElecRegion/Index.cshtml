@@ -1,0 +1,176 @@
+﻿@model CISApps.Models.Searchs
+
+@{
+    ViewData["Title"] = "Index";
+    string d_none = "";
+    if (string.IsNullOrEmpty(ViewData["error"]?.ToString() ?? "")) d_none = "d-none";
+    int i = 0;
+    int total = int.Parse(Model?.people?.elecregion?.rowCount ?? "0");
+}
+<div class="h1">
+    ข้อมูลไฟฟ้าภูมิภาค
+</div>
+
+<div class="card">
+    <div class="card-header bg-light">
+        <span class="form-label">ค้นหาด้วยเลขประจำตัวประชาชน</span>
+        <span class="col-3"><input name="spid" id="spid" value="@(Model?.people?.pop?.pid.ToString() ?? ((api.pid_test==0L)?"":api.pid_test.ToString()))" class="pid form-control d-inline-block" style="width: 25%;" /></span>
+        <span><button type="button" class="btn btn-primary" onclick="searchElection()">ค้นหา</button></span>
+    </div>
+    <div class="card-body" id="ckan">
+        <div id="errorinfo" class="text-center bg-danger text-white rounded @d_none">
+            @ViewData["error"]
+        </div>
+        <div id="list-example"></div>
+        @do
+        {
+            @if (i > 0)
+            {
+                <hr />
+            }
+            if (total > 0) {
+                var ca = (Model?.people?.elecregion?.CAList?[i] ?? new());
+                <span class="col-2 d-inline-block align-top">เลขบัญชีแสดงสัญญา</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ca?.CANo ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">ประเภทผู้ใช้ไฟฟ้า</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ca?.Class ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">ชื่อบริษัท</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ca?.CompanyName ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">ขนาดมิเตอร์</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ca?.MeterSize ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">ชื่อผู้ใช้ไฟฟ้า</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ca?.Name ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">ชั้น</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ca?.floor ?? "-")</span>
+
+                <span class="col-2 d-inline-block align-top">ที่อยู่</span>
+                <span class="col-3 d-inline-block align-top text-primary">@Html.Raw(Tools.GenAddress(ca?.HomeNo ?? "", ca?.Moo ?? "0", "", "", ca?.Street ?? "", ca?.SubDistrict ?? "", ca?.Distict ?? "", ca?.Province ?? ""))</span>
+
+                <span class="col-2 d-inline-block align-top">บ้านเลขที่ </span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ca?.HomeNo ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">ชั้น</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ca?.floor ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">ชื่อหมู่บ้าน</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ca?.VillageName ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">หมู่</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ca?.Moo ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">ถนน</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ca?.Street ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">แขวง</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ca?.SubDistrict ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">เขต</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ca?.Distict ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">จังหวัด</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ca?.Province ?? "-")</span>
+                <span class="col-2 d-inline-block align-top">รหัสไปรษณีย์</span>
+                <span class="col-3 d-inline-block align-top text-primary">@(ca?.PostCode ?? "-")</span>
+                //var bills = (ca?.BillList ?? new());
+                //int billtotal = bills.Count();
+                //int j = 0;
+
+                //<div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-smooth-scroll="true" class="scrollspy-example" tabindex="0">
+
+                //    @do
+                //    {
+                //        @if (j > 0)
+                //        {
+                //            <hr />
+                //        }
+                //        var c = "-";
+
+                //        if (billtotal > 0)
+                //        {
+                //            <div id="list-item-@(j+1)">
+                //                <span class="col-2 d-inline-block align-top">ค่าไฟฟ้า</span>
+                //                <span class="col-3 d-inline-block align-top text-primary">@c</span>
+                //                <span class="col-2 d-inline-block align-top">วันครบกำหนดชำระเงิน</span>
+                //                <span class="col-3 d-inline-block align-top text-primary">@(bills[j]?.DueDate)</span>
+                //                <span class="col-2 d-inline-block align-top">หมายเลขใบแจ้งหนี้</span>
+                //                <span class="col-3 d-inline-block align-top text-primary">@(bills[j]?.InvoiceNo ?? "-")</span>
+                //                <span class="col-2 d-inline-block align-top">บิลเดือน</span>
+                //                <span class="col-3 d-inline-block align-top text-primary">@(bills[j]?.BillPeriod ?? "-")</span>
+                //                <span class="col-2 d-inline-block align-top">วันที่ชำระเงิน</span>
+                //                <span class="col-3 d-inline-block align-top text-primary">@(bills[j]?.Paydate)</span>
+                //                <span class="col-2 d-inline-block align-top">จำนวนหน่วยใช้ไฟฟ้า</span>
+                //                <span class="col-3 d-inline-block align-top text-primary">@(bills[j]?.Unit)</span>
+                //            </div>
+                //        }
+                //        else
+                //        {
+                //            <div id="list-item-@(j+1)">
+                //                <span class="col-2 d-inline-block align-top">ค่าไฟฟ้า</span>
+                //                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                //                <span class="col-2 d-inline-block align-top">วันครบกำหนดชำระเงิน</span>
+                //                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                //                <span class="col-2 d-inline-block align-top">หมายเลขใบแจ้งหนี้</span>
+                //                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                //                <span class="col-2 d-inline-block align-top">บิลเดือน</span>
+                //                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                //                <span class="col-2 d-inline-block align-top">วันที่ชำระเงิน</span>
+                //                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                //                <span class="col-2 d-inline-block align-top">จำนวนหน่วยใช้ไฟฟ้า</span>
+                //                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                //            </div>
+                //        }
+                //        j++;
+                //    } while (j < billtotal);
+                //</div>
+            } else
+            {
+
+                <span class="col-2 d-inline-block align-top">เลขบัญชีแสดงสัญญา</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">ประเภทผู้ใช้ไฟฟ้า</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">ชื่อบริษัท</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">ขนาดมิเตอร์</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">ชื่อผู้ใช้ไฟฟ้า</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">ชั้น</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+
+                <span class="col-2 d-inline-block align-top">บ้านเลขที่ </span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">ชั้น</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">ชื่อหมู่บ้าน</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">หมู่</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">ถนน</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">แขวง</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">เขต</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">จังหวัด</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+                <span class="col-2 d-inline-block align-top">รหัสไปรษณีย์</span>
+                <span class="col-3 d-inline-block align-top text-primary"> - </span>
+
+
+            }
+
+            i++;
+        } while (i < total);
+    </div>
+</div>
+<script>
+    async function searchElection() {
+        try {
+            var spid = document.getElementById('spid').value
+            spid = spid.replace(/-/g, '').trim()
+            while (spid.length < 13) {
+                spid = '0' + spid
+            }
+            if (await runElectricRegion(spid)) {
+                document.getElementById("xyspid").value = spid;
+                document.getElementById('flk').submit()
+            }
+        } catch (error) {
+            document.getElementById('errorinfo').innerHTML = `พบปัญหา ${error}`
+        }
+    }
+</script>

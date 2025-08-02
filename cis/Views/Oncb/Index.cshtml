@@ -1,0 +1,69 @@
+﻿@model CISApps.Models.Searchs
+
+@{
+    ViewData["Title"] = "Index";
+    string d_none = "";
+    if (string.IsNullOrEmpty(ViewData["error"]?.ToString() ?? "")) d_none = "d-none";
+}
+<div class="h1">
+    ข้อมูล ปปส.
+</div>
+
+<div class="card">
+    <div class="card-header bg-light">
+        <span class="form-label">ค้นหาด้วยเลขประจำตัวประชาชน</span>
+        <span class="col-3"><input name="spid" id="spid" value="@(Model?.people?.pop?.pid.ToString() ?? ((api.pid_test==0L)?"":api.pid_test.ToString()))" class="pid form-control d-inline-block" style="width: 25%;" /></span>
+        <span><button type="button" class="btn btn-primary" onclick="searchOncb()">ค้นหา</button></span>
+    </div>
+    <div class="card-body" id="ckan">
+        <div id="errorinfo" class="text-center bg-danger text-white rounded @d_none">
+            @ViewData["error"]
+        </div>
+        <span class="col-2 d-inline-block">เลขที่คดี</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.oncb?.agency_case_no ?? "-")</span>
+        <span class="col-2 d-inline-block">ข้อหา</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.oncb?.cdthainame ?? "-")</span>
+        <span class="col-2 d-inline-block">หน่วยงานที่สอบสวน</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.oncb?.investigate_agencyname ?? "-")</span>
+        <span class="col-2 d-inline-block">ยาเสพติด</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.oncb?.narcoticthainame ?? "-")</span>
+        <span class="col-2 d-inline-block">หน่วยงานที่จับกุม</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.oncb?.arrest_agencyname ?? "-")</span>
+        <span class="col-2 d-inline-block">วันที่จับกุม</span>
+        <span class="col-3 d-inline-block text-primary">@Tools.getDateTH(Model?.people?.oncb?.arrest_date ?? 0)</span>
+        <span class="col-2 d-inline-block">วันที่จับกุม</span>
+        <span class="col-3 d-inline-block text-primary">@Tools.getDateTH(Model?.people?.oncb?.arrest_date ?? 0)</span>
+        <hr/>
+        <span class="col-2 d-inline-block">เลขประจำตัวประชาชน</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.oncb?.person_id ?? "-")</span>
+        <span class="col-2 d-inline-block">ชื่อตัว</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.oncb?.thai_name ?? "-")</span>
+        <span class="col-2 d-inline-block">นามสกุล</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.oncb?.thai_surname ?? "-")</span>
+        <span class="col-2 d-inline-block">หมู่บ้านที่เกิดเหตุ</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.oncb?.villagename ?? "-")</span>
+        <span class="col-2 d-inline-block">ตำบลที่เกิดเหตุ</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.oncb?.subdistrictname ?? "-")</span>
+        <span class="col-2 d-inline-block">อำเภอที่เกิดเหตุ</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.oncb?.districtname ?? "-")</span>
+        <span class="col-2 d-inline-block">จังหวัดที่เกิดเหตุ</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.oncb?.provincethai ?? "-")</span>
+    </div>
+</div>
+<script>
+    async function searchOncb() {
+        try {
+            var spid = document.getElementById('spid').value
+            spid = spid.replace(/-/g, '').trim()
+            while (spid.length < 13) {
+                spid = '0' + spid
+            }
+            if (await runOncb(spid)) {
+                document.getElementById("xyspid").value = spid;
+                document.getElementById('flk').submit()
+            }
+        } catch (error) {
+            document.getElementById('errorinfo').innerHTML = `พบปัญหา ${error}`
+        }
+    }
+</script>

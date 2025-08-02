@@ -1,0 +1,66 @@
+﻿@model CISApps.Models.Searchs
+
+@{
+    ViewData["Title"] = "Index";
+    string d_none = "";
+    if (string.IsNullOrEmpty(ViewData["error"]?.ToString() ?? "")) d_none = "d-none";
+}
+
+<div class="h1">ข้อมูลหมายจับ สำนักงานตำรวจแห่งชาติ</div>
+
+<div class="card">
+    <div class="card-header bg-light">
+        <span class="form-label">ค้นหาด้วยเลขประจำตัวประชาชน</span>
+        <span class="col-3"><input name="spid" id="spid" value="@(Model?.people?.pop?.pid.ToString() ?? ((api.pid_test==0L)?"":api.pid_test.ToString()))" class="pid form-control d-inline-block" style="width: 25%;" /></span>
+        <span><button type="button" class="btn btn-primary" onclick="searchPolice()">ค้นหา</button></span>
+    </div>
+    <div class="card-body" id="ckan">
+        <div id="errorinfo" class="text-center bg-danger text-white rounded @d_none">
+            @ViewData["error"]
+        </div>
+        <div class="text-dark">
+            <span class="col-2 d-inline-block">วัน เดือน ปี ที่ต้องคดี</span>
+            <span class="col-3 d-inline-block text-primary">@Tools.getDateTH(int.Parse(Model?.people?.police?.complain_date ?? "0"))</span>
+            <span class="col-2 d-inline-block">คดีที่</span>
+            <span class="col-4 d-inline-block text-primary">@(Model?.people?.police?.crime_number ?? "-")</span>
+            <span class="col-2 d-inline-block">กระทำความผิดฐาน</span>
+            <span class="col-10 d-inline-block text-primary">@(Model?.people?.police?.crime_number ?? "-")</span>
+            <span class="col-2 d-inline-block">วันที่ออกหมายจับ</span>
+            <span class="col-3 d-inline-block text-primary">@Tools.getDateTH(int.Parse((Model?.people?.police?.want_d ?? "0")))</span>
+            <span class="col-2 d-inline-block">หมายจับที่</span>
+            <span class="col-4 d-inline-block text-primary">@(Model?.people?.police?.warrant_no ?? "-")</span>
+            <span class="col-2 d-inline-block">สถานที่ออกหมายจับ</span>
+            <span class="col-10 d-inline-block text-primary">@(Model?.people?.police?.org ?? "-")</span>
+            <hr />
+
+            <span class="col-2 d-inline-block">เลขประจำตัวประชาชน</span>
+            <span class="col-3 d-inline-block text-primary pid">@(Model?.people?.police?.id_no ?? "-")</span>
+            <span class="col-2 d-inline-block">คำนำหน้า</span>
+            <span class="col-3 d-inline-block text-primary pid">@(Model?.people?.police?.title ?? "-")</span>
+            <span class="col-2 d-inline-block">ชื่อตัว</span>
+            <span class="col-3 d-inline-block text-primary pid">@(Model?.people?.police?.first_name ?? "-")</span>
+            <span class="col-2 d-inline-block">นามสกุล</span>
+            <span class="col-4 d-inline-block text-primary pid">@(Model?.people?.police?.last_name ?? "-")</span>
+            <br />
+            <span class="col-2 d-inline-block">ที่อยู่</span>
+            <span class="col-10 d-inline-block text-primary pid">@(Model?.people?.police?.address ?? "-")</span>
+        </div>
+    </div>
+</div>
+<script>
+    async function searchPolice() {
+        try{
+            var spid = document.getElementById('spid').value
+            spid = spid.replace(/-/g, '').trim()
+            while (spid.length < 13) {
+                spid = '0' + spid
+            }
+            if (await runPolice(spid)) {
+                document.getElementById("xyspid").value = spid;
+                document.getElementById('flk').submit()
+            }
+        } catch (error) {
+            document.getElementById('errorinfo').innerHTML = `พบปัญหา ${error}`
+        }
+    }
+</script>

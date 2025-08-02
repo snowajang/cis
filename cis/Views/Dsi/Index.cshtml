@@ -1,0 +1,80 @@
+﻿@model CISApps.Models.Searchs
+
+@{
+    ViewData["Title"] = "Index";
+    string d_none = "";
+    if (string.IsNullOrEmpty(ViewData["error"]?.ToString() ?? "")) d_none = "d-none";
+}
+<div class="h1">
+    DSI ข้อมูลผู้ต้องหา
+</div>
+
+<div class="card">
+    <div class="card-header bg-light">
+        <span class="form-label">ค้นหาด้วยเลขประจำตัวประชาชน</span>
+        <span class="col-3"><input name="spid" id="spid" value="@(Model?.people?.pop?.pid.ToString() ?? ((api.pid_test==0L)?"":api.pid_test.ToString()))" class="pid form-control d-inline-block" style="width: 25%;" /></span>
+        <span><button type="button" class="btn btn-primary" onclick="searchDsi()">ค้นหา</button></span>
+    </div>
+    <div class="card-body" id="ckan">
+        <div id="errorinfo" class="text-center bg-danger text-white rounded @d_none">
+            @ViewData["error"]
+        </div>
+        <span class="col-2 d-inline-block">เลขที่หมาย</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dsi?.lawsuit_id ?? "-")</span>
+        <span class="col-2 d-inline-block">อายุความ</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dsi?.prescription ?? "-")</span>
+        <span class="col-2 d-inline-block">สถานะการดำเนินคดี</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dsi?.proceedings ?? "-")</span>
+        <span class="col-2 d-inline-block">ผู้ร้อง</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dsi?.barker ?? "-")</span>
+        <span class="col-2 d-inline-block">คำร้องเลขที่</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dsi?.barker_number ?? "-")</span>
+        <span class="col-2 d-inline-block">เลขที่คดี</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dsi?.case_no ?? "-")</span>
+        <span class="col-2 d-inline-block">ศาล</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dsi?.court ?? "-")</span>
+        <span class="col-2 d-inline-block">วันที่จับกุม</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dsi?.date_arrest ?? "-")</span>
+        <span class="col-2 d-inline-block">วันที่ออกหมายจับ</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dsi?.date_enforcement ?? "-")</span>
+        <span class="col-2 d-inline-block">สถานะการหลบหนี</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dsi?.escape ?? "-")</span>
+        <span class="col-2 d-inline-block">ฐานความผิด</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dsi?.guilt ?? "-")</span>
+        <span class="col-2 d-inline-block">นับตั้งแต่วันที่</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dsi?.start_date ?? "-")</span>
+        <span class="col-2 d-inline-block">แต่ไม่เกินวันที่</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dsi?.finish_date ?? "-")</span>
+        <hr />
+        <span class="col-2 d-inline-block">เลขประจำตัวประชาชน</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dsi?.id_card ?? "-")</span>
+        <span class="col-2 d-inline-block">ชื่อ นามสกุล</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dsi?.accused ?? "-")</span>
+        <span class="col-2 d-inline-block">ที่อยู่ผู้ต้องหา</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dsi?.accused_address ?? "-")</span>
+        <span class="col-2 d-inline-block">สถานะการตัดสิน</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dsi?.adjudge ?? "-")</span>
+        <span class="col-2 d-inline-block">สถานะการจับกุม</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dsi?.arrested ?? "-")</span>
+        <span class="col-2 d-inline-block">สถานะหมายจับ</span>
+        <span class="col-3 d-inline-block text-primary">@((Model?.people?.dsi?.status_record == 0 ? "Inactive" : (Model?.people?.dsi?.status_record==1?"Active":null)) ?? "-")</span>
+
+    </div>
+</div>
+<script>
+    async function searchDsi() {
+        try {
+            var spid = document.getElementById('spid').value
+            spid = spid.replace(/-/g, '').trim()
+            while (spid.length < 13) {
+                spid = '0' + spid
+            }
+            if (await runDsi(spid)) {
+                document.getElementById("xyspid").value = spid;
+                document.getElementById('flk').submit()
+            }
+        } catch (error) {
+            document.getElementById('errorinfo').innerHTML = `พบปัญหา ${error}`
+        }
+    }
+</script>

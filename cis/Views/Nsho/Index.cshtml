@@ -1,0 +1,93 @@
+﻿@model CISApps.Models.Searchs
+
+@{
+    ViewData["Title"] = "Index";
+    string d_none = "";
+    if (string.IsNullOrEmpty(ViewData["error"]?.ToString() ?? "")) d_none = "d-none";
+    var n = Model?.people?.nsho;
+}
+
+<div class="h1">
+    ข้อมูลสิทธิรักษาพยาบาล
+</div>
+
+<div class="card">
+    <div class="card-header bg-light">
+        <span class="form-label">ค้นหาด้วยเลขประจำตัวประชาชน</span>
+        <span class="col-3"><input name="spid" id="spid" value="@(Model?.people?.pop?.pid.ToString() ?? ((api.pid_test==0L)?"":api.pid_test.ToString()))" class="pid form-control d-inline-block" style="width: 25%;" /></span>
+        <span><button type="button" class="btn btn-primary" onclick="searchNhso()">ค้นหา</button></span>
+    </div>
+    <div class="card-body" id="ckan">
+        <div id="errorinfo" class="text-center bg-danger text-white rounded @d_none">
+            @ViewData["error"]
+        </div>
+        <span class="col-2 d-inline-block align-top">รหัสบัตรประกันสุขภาพ</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.PERSON_ID ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">รูปแบบการให้บริการเพื่อรับการจัดสรรเงินใหม่</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.PAID_MODEL ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">ชื่อจังหวัด</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.PURCHASEPROVINCE_NAME ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">วันเริ่มใช้สิทธิใหม่</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.STARTDATE ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">ชื่อประเภทสิทธิย่อยใหม่</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.SUBINSCL_NAME ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">วันเริ่มใช้สิทธิ</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.STARTDATE ?? "-")</span>
+        <hr />
+        <span class="col-2 d-inline-block align-top">วันหมดสิทธิ</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.EXPDATE ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">รหัสหน่วยบริการที่รับการส่งต่อ</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.HMAIN ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">ชื่อหน่วยบริการที่รับการส่งต่อ</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.HMAIN_NAME ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">ชื่อหน่วยบริการประจำ</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.HMAIN_OP_NAME ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">ชื่อหน่วยบริการปฐมภูมิ</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.HSUB_NAME ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">ชื่อสิทธิหลักในการรับบริการ</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.MAININSCL_NAME ?? "-")</span>
+        <hr />
+        <span class="col-2 d-inline-block align-top">รูปแบบการให้บริการเพื่อรับการจัดสรรเงินใหม่</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.NEW_PAID_MODEL ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">ชื่อจังหวัด</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.NEW_PURCHASEPROVINCE_NAME ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">วันเริ่มใช้สิทธิใหม่</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.NEW_STARTDATE ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">ชื่อประเภทสิทธิย่อยใหม่</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.NEW_SUBINSCL_NAME ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">รายละอียดของประเภทการลงทะเบียนใหม่</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.NEW_TYPE_REGISTER_DESC ?? "-")</span>
+        <hr />
+        <span class="col-2 d-inline-block align-top">วันหมดสิทธิใหม่</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.NEW_EXPDATE ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">รหัสหน่วยบริการที่รับการส่งต่อใหม่</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.NEW_HMAIN ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">ชื่อหน่วยบริการที่รับการส่งต่อใหม่</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.NEW_HMAIN_NAME ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">ชื่อหน่วยบริการประจำใหม่</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.NEW_HMAIN_OP_NAME ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">ชื่อหน่วยบริการปฐมภูมิใหม่</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.NEW_HSUB_NAME ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">ชื่อสิทธิหลักในการรับบริการใหม่</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(n?.NEW_MAININSCL_NAME ?? "-")</span>
+
+    </div>
+</div>
+
+<script>
+    async function searchNhso() {
+        try {
+            var spid = document.getElementById('spid').value
+            spid = spid.replace(/-/g, '').trim()
+            while (spid.length < 13) {
+                spid = '0' + spid
+            }
+            if (await runNhso(spid)) {
+                document.getElementById("xyspid").value = spid;
+                document.getElementById('flk').submit()
+            }
+        } catch (error) {
+            document.getElementById('errorinfo').innerHTML = `พบปัญหา ${error}`
+        }
+    }
+</script>

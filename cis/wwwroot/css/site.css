@@ -1,0 +1,28 @@
+/* Custom styles goes here */
+.bg-logo-key {
+    background-image: url("/img/SMKey.png");
+    background-repeat: no-repeat;
+    background-position: center;
+/*    background-color: black;*/
+/*    background-color: #e17676;*/
+    background-size: 150px, 150px;
+/*    padding: 0px;*/
+}
+.bg-logo {
+    height: 100vh;
+    background: linear-gradient(to top, #015871, #0288d1, #4fc3f7);
+    animation: oceanWave 10s ease-in-out infinite alternate;
+    font-family: sans-serif;
+}
+
+@keyframes oceanWave {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+
+.content {
+    color: white;
+    text-align: center;
+    padding-top: 25vh;
+    text-shadow: 1px 1px 4px #000;
+}

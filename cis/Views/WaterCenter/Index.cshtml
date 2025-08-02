@@ -1,0 +1,53 @@
+﻿@model CISApps.Models.Searchs
+
+@{
+    ViewData["Title"] = "Index";
+    string d_none = "";
+    if (string.IsNullOrEmpty(ViewData["error"]?.ToString() ?? "")) d_none = "d-none";
+    var w = Model?.people?.watercenter?.response;
+}
+<div class="h1">
+    ข้อมูลประปานครหลวง
+</div>
+
+<div class="card">
+    <div class="card-header bg-light">
+        <span class="form-label">ค้นหาด้วยเลขประจำตัวประชาชน</span>
+        <span class="col-3"><input name="spid" id="spid" value="@(Model?.people?.pop?.pid.ToString() ?? ((api.pid_test==0L)?"":api.pid_test.ToString()))" class="pid form-control d-inline-block" style="width: 25%;" /></span>
+        <span><button type="button" class="btn btn-primary" onclick="searchWater()">ค้นหา</button></span>
+    </div>
+    <div class="card-body" id="ckan">
+        <div id="errorinfo" class="text-center bg-danger text-white rounded @d_none">
+            @ViewData["error"]
+        </div>
+        <span class="col-2 d-inline-block align-top">ชื่อผู้ใช้น้ำ</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(w?.message?.accountName ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">สาขาผู้ใช้น้ำ</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(w?.message?.branchName ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">ขนาดมาตร</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(w?.message?.meterSizeDescription ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">จำนวนบิลที่ค้างชำระ</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(w?.message?.numberOfDebtBill ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">บ้านเลขที่</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(w?.message?.accountAddressInfo?.houseNo ?? "-")</span>
+        <span class="col-2 d-inline-block align-top">ที่อยู่</span>
+        <span class="col-3 d-inline-block align-top text-primary">@(w?.message?.accountAddressInfo?.address ?? "-")</span>
+    </div>
+</div>
+<script>
+    async function searchWater() {
+        try {
+            var spid = document.getElementById('spid').value
+            spid = spid.replace(/-/g, '').trim()
+            while (spid.length < 13) {
+                spid = '0' + spid
+            }
+            if (await runWaterCenter(spid)) {
+                document.getElementById("xyspid").value = spid;
+                document.getElementById('flk').submit()
+            }
+        } catch (error) {
+            document.getElementById('errorinfo').innerHTML = `พบปัญหา ${error}`
+        }
+    }
+</script>

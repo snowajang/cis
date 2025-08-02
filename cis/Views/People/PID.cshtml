@@ -1,0 +1,1322 @@
+@model CISApps.Models.Searchs
+
+@{
+    ViewData["Title"] = "PeoplePID";
+    string d_none = "";
+    if (string.IsNullOrEmpty(Model?.errorMessage ?? "")) d_none = "d-none";
+    string cardprev = ViewData["cardprev"]?.ToString() ?? "";
+    string cardnext = ViewData["cardnext"]?.ToString() ?? "";
+    int cardindex = int.Parse(ViewData["cardindex"]?.ToString() ?? "0");
+    
+    int poptotal = int.Parse(ViewData["poptotal"]?.ToString() ?? "0");
+    int popindex = int.Parse(ViewData["popindex"]?.ToString() ?? "0");
+    int popprev = int.Parse(ViewData["popprev"]?.ToString() ?? "0");
+    int popnext = int.Parse(ViewData["popnext"]?.ToString() ?? "0");
+
+    int oldpoptotal = int.Parse(ViewData["oldpoptotal"]?.ToString() ?? "0");
+    int oldpopindex = int.Parse(ViewData["oldpopindex"]?.ToString() ?? "0");
+    int oldpopprev = int.Parse(ViewData["oldpopprev"]?.ToString() ?? "0");
+    int oldpopnext = int.Parse(ViewData["oldpopnext"]?.ToString() ?? "0");
+    string btnout = "btn btn-outline-primary mt-1";
+}
+
+<div class="h1 d-flex justify-content-between">
+    <span>ตรวจสอบรายการบุคคล</span>
+    @if (Model?.people?.pop != null)
+    {
+        <span>
+            <button class="btn btn-primary" onclick="onprint()">พิมพ์</button>
+        </span>
+    }
+</div>
+
+<div class="card">
+    <div class="card-header bg-light">
+        <div class="row">
+            <div class="col-3 px-0">
+                <select id="choicePop" class="form-select" onchange="selectedChoicePop()" style="width: 250px;">
+                    <option value="1">
+                        <label class="form-label">ค้นหาด้วยเลขประจำตัวประชาชน</label>
+                    </option>
+                    <option value="2">
+                        <label class="form-label">ค้นหาด้วย ชื่อ สกุล</label>
+                    </option>
+                    <option value="3">
+                        <label class="form-label">ค้นหาด้วย ชื่อ สกุล เดิม</label>
+                    </option>
+                </select>
+            </div>
+            <div class="col">
+                <div id="a1">
+                    <form asp-action="Index" asp-controller="Pop" method="post">
+                        <input id="spid" type="text" class="form-control d-inline" value="@(ViewData["xyspid"]?.ToString() ?? "")" style="width:200px;" />
+                        <button id="ibtnpid" type="button" onclick="runPopPid()" class="btn btn-primary">ค้นหา</button>
+                    </form>
+                </div>
+                <div id="a2" class="d-none">
+                    <form asp-action="Index" asp-controller="Pop" method="post">
+                        <input id="nFname" type="text" class="form-control d-inline" value="@ViewData["xyfname"]" placeholder="ชื่อตัว" style="width:200px;" />
+                        <input id="nMname" type="text" class="form-control d-inline" value="@ViewData["xymname"]" placeholder="ชื่อรอง" style="width:200px;" />
+                        <input id="nLname" type="text" class="form-control d-inline" value="@ViewData["xylname"]" placeholder="นามสกุล" style="width:200px;" />
+                        <input id="nameindex" name="nameindex" type="hidden" value="@(ViewBag.popindex)" />
+                        <button id="ibtnname" type="button" onclick="runPopName()" class="btn btn-primary">ค้นหา</button>
+                    </form>
+                </div>
+                <div id="a3" class="d-none">
+                    <form asp-action="Index" asp-controller="Pop" method="post">
+                        <input id="oFname" type="text" class="form-control d-inline" value="@ViewData["xyofname"]" placeholder="ชื่อตัว (เดิม)" style="width:200px;" />
+                        <input id="oLname" type="text" class="form-control d-inline" value="@ViewData["xyolname"]" placeholder="นามสกุล (เดิม)" style="width:200px;" />
+                        <button id="ibtnoldname" type="button" onclick="runPopOldName(1)" class="btn btn-primary">ค้นหา</button>
+                    </form>
+                </div>
+
+                <div id="isload" class="d-none m-4 d-inline spinner-border text-warning" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body" id="ckan"> 
+        <div id="errorinfo" class="text-center bg-danger text-white rounded @d_none">
+            @ViewData["error"]
+        </div>
+        <div class="h4 d-flex justify-content-between">
+            <span class="col">
+                ข้อมูลบุคคล
+            </span>
+            @if (popindex > 0)
+            {
+                <span>
+                    <button class="btn @((popprev == 0) ? "btn-white" : "btn-success")" onclick="loadnamepop(@popprev)" @((popprev == 0) ? "disabled" : "")>ข้อมูลก่อนหน้า</button>
+                    <span>
+                        @($"{popindex}/{poptotal}")
+                    </span>
+                    <button class="btn btn-success" onclick="loadnamepop(@popnext)" @((popnext == 0) ? "disabled" : "")>ข้อมูลต่อไป</button>
+                </span>
+            } else if (oldpopindex > 0)
+            {
+                <span>
+                    <button class="btn @((oldpopprev == 0) ? "btn-white" : "btn-success")" onclick="runPopOldName(@oldpopprev)" @((oldpopprev == 0) ? "disabled" : "")>ข้อมูลก่อนหน้า</button>
+                    <span>
+                        @($"{oldpopindex}/{oldpoptotal}")
+                    </span>
+                    <button class="btn btn-success" onclick="runPopOldName(@oldpopnext)" @((oldpopnext == 0) ? "disabled" : "")>ข้อมูลต่อไป</button>
+                </span>
+                
+            }
+        </div>
+
+        <div class="h4">
+            @if (Model?.people?.pop?.pid > 0)
+            {
+                // jobid
+                if (Model!=null) {
+
+                }
+                // job ข้อมูลหมายจับ
+                <button class="@btnout" onclick="postpagepolice('@Model?.people?.pop?.pid','@Url.Action("Index","Police")','')" type="button"> ข้อมูลหมายจับ </button>
+                <button class="@btnout" onclick="posepagedsi('@Model?.people?.pop?.pid','@Url.Action("Index","Dsi")','')" type="button"> DSI ข้อมูลผู้ต้องหา </button>
+                <button class="@btnout" onclick="postpageoncb('@Model?.people?.pop?.pid','@Url.Action("Index","Oncb")','')" type="button"> ข้อมูล ปปส. </button>
+                <button class="@btnout" onclick="postpagedea('@Model?.people?.pop?.pid','@Url.Action("Index","Dea")','')" type="button"> ข้อมูล ปปง. </button>
+                <button class="@btnout" onclick="posepageborderpass('@Model?.people?.pop?.pid','@Url.Action("Index","Borderpass")','')" type="button"> หนังสือผ่านแดน </button>
+                <button class="@btnout" onclick="postpagegunbp4('@Model?.people?.pop?.pid','@Url.Action("Card","Gun")','')" type="button"> ใบอนุญาตอาวุธปืน </button>
+                <button class="@btnout" onclick="postpagetransport('@Model?.people?.pop?.pid','@Url.Action("Index","Transport")','')" type="button"> ข้อมูลยานพาหนะ </button>
+                <button class="@btnout" onclick="postpagetransportcard('@Model?.people?.pop?.pid','@Url.Action("Card","Transport")','')" type="button"> ข้อมูลใบขับขี่ </button>
+                <button class="@btnout" onclick="postpageeleccenter('@Model?.people?.pop?.pid','@Url.Action("Index","ElecCenter")','')" type="button"> ข้อมูลไฟฟ้านครหลวง </button>
+                <button class="@btnout" onclick="postpageelecregion('@Model?.people?.pop?.pid','@Url.Action("Index","ElecRegion")','')" type="button"> ข้อมูลไฟฟ้าภูมิภาค </button>
+                <button class="@btnout" onclick="postpagewatercenter('@Model?.people?.pop?.pid','@Url.Action("Index","WaterCenter")','')" type="button"> ข้อมูลประปานครหลวง </button>
+                <button class="@btnout" onclick="postpagewaterregion('@Model?.people?.pop?.pid','@Url.Action("Index","WaterRegion")','')" type="button"> ข้อมูลประปาภูมิภาค </button>
+                <button class="@btnout" onclick="postpagensho('@Model?.people?.pop?.pid','@Url.Action("Index","Nsho")','')" type="button"> ข้อมูลสิทธิรักษาพยาบาล </button>
+            }
+        </div>
+        <hr />
+        <!-- #1 info -->
+        <div class="row px-1">            
+            <div class="col-12 col-xl-2 col-xxl-2">
+                <div class="mb-2 mx-auto text-center">
+                    @if (Model?.people?.cardImage?.image != null)
+                    {
+                        <img src="@($"{Model?.people?.cardImage?.mineType},{Model?.people?.cardImage?.image}")" class="" width="150" height="180" />
+                        <button type="button" class="btn btn-primary mt-1" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                           แสดงภาพหน้า
+                        </button>
+
+                    }else {
+                    <img src="@(Model?.people?.cardImage?.image ?? ("/img/avatars/avatar-999.svg"))" class="rounded-pill" width="150" height="150" />
+                    }
+                </div>
+            </div> 
+            <div class="col-12 col-xl-4 col-xxl-4">
+                <div class="h4">
+                    ข้อมูล
+                </div>
+                <hr />
+                <div class="row h5">                     
+                    <span class="col-6 d-inline-block "> เลขประจำตัวประชาชน </span> 
+                    <span class="col-6 d-inline-block text-primary"> @((Model?.people?.pop?.pid==0)? "" : Model?.people?.pop?.pid.ToString("0 0000 00000 00 0"))  </span>
+                </div>
+                <div class="row h5">
+                    <span class="col-3 d-inline-block "> ชื่อ สกุล </span> 
+                    <span class="col-7 d-inline-block text-primary"> @(Model?.people?.pop?.fullnameAndRank ?? "-")  </span>
+                </div>
+                <div class="row h5">
+                    <span class="col-3 d-inline-block pe-0"> Eng Name </span>
+                    <span class="col-8 d-inline-block text-primary"> @((Model?.people?.pop?.englishTitleDesc != null) ? $"{Model?.people?.pop?.englishTitleDesc}{Model?.people?.pop?.englishFirstName} {Model?.people?.pop?.englishMiddleName} {Model?.people?.pop?.englishLastName}".Trim() : "-")</span>
+                </div>
+                <div class="row h5">
+                    <span class="col-3 d-inline-block"> เพศ </span>
+                    <span class="col-3 d-inline-block text-primary"> @(Model?.people?.pop?.genderDesc ?? "-")  </span>
+                    <span class="col-3 d-inline-block"> สัญชาติ </span>
+                    <span class="col-3 d-inline-block text-primary"> @(Model?.people?.pop?.nationalityDesc ?? "-")  </span>
+
+                </div>
+                <div class="row h5">
+                    <span class="col-3 d-inline-block"> วันเกิด </span>
+                    <span class="col-4 d-inline-block text-primary"> @Tools.getDateTH(Model?.people?.pop?.dateOfBirth)  </span>
+                    <span class="col-2 d-inline-block"> อายุ </span>
+                    <span class="col-2 d-inline-block text-primary text-center"> @(Model?.people?.pop?.age.ToString() ?? "-")  </span>
+                    <span class="col-1 d-inline-block"> ปี </span>
+                </div>
+                <div class="row h5"></div>
+                <div class="row h5">
+                    <span class="col-12 pe-0 d-inline-block"> สถานะภาพบุคคล  </span>
+                    <span class="col-12 pe-0 d-inline-block text-primary">
+                        @(Model?.people?.pop?.statusOfPersonDesc ?? "-")
+                    </span>
+                </div>
+            </div>
+            <div class="col-12 col-xl-5 col-xxl-5">
+                <div class="h4">
+                    ที่อยู่
+                </div>
+                <hr />
+                <div class="row h6">
+                    <span class="col-5 d-inline-block"> รหัสประจำบ้าน </span>
+                    <span class="col-6 d-inline-block text-primary">
+                        <input id="pophid" type="hidden" value="@Model?.people?.house?.houseID" />
+                        @(Model?.people?.house?.houseID.ToString("0000-000000-0") ?? "-")
+                        @if (@Model?.people?.house?.houseID > 0) {
+                            <button class="@btnout" onclick="postpagehouse('@Model?.people?.house?.houseID', '@Url.Action("House","Pop")')">ดู</button>
+                        }
+                    </span>
+                </div>
+                <div class="row h5">
+                    <span class="col-5 d-inline-block"> ที่อยู่ </span>
+                    <span class="col-6 d-inline-block text-primary">
+                        @if (Model?.people?.house == null)
+                        {
+                            <span> - </span>
+                        }
+                        else
+                        {
+                            var vaddress = Model?.people?.house ?? new House();
+                            <span>@Html.Raw(Tools.GenAddress(vaddress.houseNo, vaddress.villageNo.ToString(), vaddress.alleyWayDesc, vaddress.alleyDesc, vaddress.roadDesc, vaddress.subdistrictDesc, vaddress.districtDesc, vaddress.provinceDesc, vaddress.roadDesc))</span>
+                        }
+                    </span>
+                </div>
+                <div class="row h5">
+                    <span class="col-5 d-inline-block"> ประเภทบ้าน </span>
+                    <span class="col-6 d-inline-block text-primary">
+                        @(Model?.people?.house?.houseTypeDesc ?? "-")
+                    </span>
+                </div>
+                <div class="row h5">
+                    <span class="col-5 d-inline-block"> สถานะภาพเจ้าบ้าน </span>
+                    <span class="col-6 d-inline-block text-primary">
+                        @(Model?.people?.pop?.ownerStatusDesc ?? "-")
+                    </span>
+                </div>
+                <div class="row h5">
+                    <span class="col-3 d-inline-block"> วันที่ย้ายเข้า </span>
+                    <span class="col-3 px-0 d-inline-block text-primary">
+                        @(Tools.getDateTH(Model?.people?.pop?.dateOfMoveIn))
+                    </span>
+                    <span class="col-3 d-inline-block"> วันที่จำหน่าย </span>
+                    <span class="col-3 px-0 d-inline-block text-primary">
+                        @Tools.getDateTH(Model?.people?.house?.dateOfTerminate)
+                    </span>
+                </div>
+            </div>
+        </div>
+        <!-- #2 parent -->
+        <div class="row px-2 mt-4">
+            <div class="col mx-1 card">
+                <div class="card-body">
+                    <div class="h4">
+                        บิดา
+                    </div>
+                    <hr />
+                    <div class="row h6">
+                        <span class="col-11">เลขประจำตัวประชาชน</span>
+                        <span class="col-11 text-info pid" onclick="searchWithFatherID()">
+                            <input id="popfapid" type="hidden" value="@Model?.people?.pop?.fatherPersonalID" />
+                            @(Tools.GenID(Model?.people?.pop?.fatherPersonalID))
+                            @if (@Model?.people?.pop?.fatherPersonalID > 0)
+                            {
+                                <button class="@btnout" onclick="postpagepop('@Model?.people?.pop?.fatherPersonalID')">ดู</button>
+                            }
+                        </span>
+                    </div>
+                    <div class="row h5">
+                        <span class="col-3 px-0 text-end">ชื่อตัว</span>
+                        <span class="col-9 text-info">
+                            @(Model?.people?.pop?.fatherName ?? "-")
+                        </span>
+                    </div>
+                    <div class="row h5">
+                        <span class="col-3 px-0 text-end">สัญชาติ</span>
+                        <span class="col-8 text-info">
+                            @(Model?.people?.pop?.fatherNationalityDesc ?? "-")
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col mx-1 card">
+                <div class="card-body">
+                    <div class="h4">
+                        มารดา
+                    </div>
+                    <hr />
+                    <div class="row h6">
+                        <span class="col-11">เลขประจำตัวประชาชน</span>
+                        <span class="col-11 text-info pid" onclick="searchWithFatherID()">
+                            <input id="popmopid" type="hidden" value="@Model?.people?.pop?.motherPersonalID" />
+                            @(Tools.GenID(Model?.people?.pop?.motherPersonalID))
+                            @if (@Model?.people?.pop?.motherPersonalID > 0)
+                            {
+                                <button class="@btnout" onclick="postpagepop('@Model?.people?.pop?.motherPersonalID')">ดู</button>
+                            }
+                        </span>
+                    </div>
+                    <div class="row h5">
+                        <span class="col-3 px-0 text-end">ชื่อตัว</span>
+                        <span class="col-9 text-info">
+                            @(Model?.people?.pop?.motherName ?? "-")
+                        </span>
+                    </div>
+                    <div class="row h5">
+                        <span class="col-3 px-0 text-end">สัญชาติ</span>
+                        <span class="col-8 text-info">
+                            @(Model?.people?.pop?.motherNationalityDesc ?? "-")
+                        </span>
+                    </div>                    
+                </div>
+            </div>
+            <div class="col mx-2 card">
+                <div class="card-body">
+                    <div class="h4">
+                        บุตร
+                    </div>
+                    <hr />
+                    @{
+                        int childi = 0;
+                        string ch_id = $"child{childi}";
+                    }
+                    @do{
+                        var c = Model?.people?.child?.child[childi] ?? new();
+                        <div class="row h6">
+                            <span class="col-11">เลขประจำตัวประชาชน</span>
+                            <span class="col-11 text-info pid" onclick="searchWithChildID(@childi)">
+                                <input id="@ch_id" type="hidden" value="@Model?.people?.pop?.motherPersonalID" />
+                                @(Tools.GenID(c?.personalID))
+                                @if (@c?.personalID > 0)
+                                {
+                                    <button class="@btnout" onclick="postpagepop('@c?.personalID')">ดู</button>
+                                }
+                            </span>
+                        </div>
+                        <div class="row h5">
+                            <span class="col-3 px-0 text-end">ชื่อ สกุล</span>
+                            <span class="col-9 text-info">
+                                @((!string.IsNullOrEmpty(c?.titleDesc)) ? $"{c?.titleDesc}{c?.firstName} {c?.middleName} {c?.lastName}" : "-")
+                            </span>
+                        </div>
+                        <div class="row h5">
+                            <span class="col-3 px-0 text-end">สัญชาติ</span>
+                            <span class="col-8 text-info">
+                                @((!string.IsNullOrEmpty(c?.nationalityDesc)) ? $"{c?.nationalityDesc}" : "-")
+                            </span>
+                        </div>
+                        <div class="row h5">
+                            <span class="col-3 px-0 text-end">อายุ</span>
+                            <span class="col-8 text-info">
+                                @((c?.age>0) ? $"{c?.age}" : "-")
+                            </span>
+                        </div>
+                        <div class="row h5">
+                            <span class="col-3 px-0 text-end">สถานะ</span>
+                            <span class="col-8 text-info">
+                                @((!string.IsNullOrEmpty(c?.statusOfPersonDesc)) ? $"{c?.statusOfPersonDesc}" : "-")
+                            </span>
+                        </div>
+                        childi++;
+                    } while( childi < Model?.people?.child?.totalChild);
+                </div>
+            </div>
+        </div>
+        <!-- #3 card -->
+        @if (false)
+        {
+            <!-- ประวัติการทำบัตร -->
+            <div id="newCard" class="row px-2 mt-0">
+                <div class="col mx-1 card">
+                    <div class="card-body">
+                        <div class="h4">
+                            ประวัติการทำบัตร
+                        </div>
+                        <hr />
+                        @{
+                            CardBP1 bp1 = Model?.people?.cardDetail?.cardbp?[cardindex] ?? new();
+                            int cardtotal = Model?.people?.cardDetail?.cardbp?.Count() ?? 0;
+                            int caseindex = cardindex + 1;
+                            if (caseindex > 1) { cardprev = ""; }
+                            if (caseindex < cardtotal) { cardnext = ""; }
+                        }
+                        <div class="row">
+                            <div class="col-12 col-xl-2 col-xxl-2">
+                                <div class="mb-2 mx-auto text-center">
+
+                                    @if (! string.IsNullOrEmpty(bp1.cardImage.image))
+                                    {
+                                        <img src="@($"{bp1.cardImage?.mineType},{bp1.cardImage?.image}")" class="" width="150" height="180" />
+                                        <button type="button" class="btn btn-primary mt-1" data-bs-toggle="modal" data-bs-target="#exampleModal2">
+                                            แสดงภาพหน้า
+                                        </button>
+                                    }else {
+                                        <img src="/img/avatars/avatar-999.svg" class="rounded-pill" width="150" height="150" />
+                                    }
+                                </div>
+                            </div>
+                            <div class="col-12 col-xl-9 col-xxl-9 ms-1">
+                            <div class="row h6">
+                                <span class="col-3">หมายเลขคำขอมีบัตร</span>
+                                <span class="col-9 text-primary">
+                                    @(bp1?.documentNumber ?? "-")
+                                </span>
+                            </div>
+                            <div class="row h5">
+                                <span class="col-3">เบอร์โทร</span>
+                                <span class="col-4 text-primary">
+                                    @(bp1?.card?.phoneNumber ?? "-")
+                                </span>
+                                <span class="col-2">หมู่โลหิต</span>
+                                <span class="col-3 text-primary">
+                                    @(bp1?.card?.blood ?? "-")
+                                </span>
+                            </div>
+                            <div class="row h5">
+                                <span class="col-3">วันเกิด</span>
+                                <span class="col-4 text-primary">
+                                    @Tools.getDateTH(bp1?.card?.birthDate)
+                                </span>
+                                <span class="col-2">เพศ</span>
+                                <span class="col-3 text-primary">
+                                    @(bp1?.card?.sex ?? "-")
+                                </span>
+                            </div>
+                            <div class="row h5">
+                                <span class="col-3">วันเดือนปี ที่ออกบัตร</span>
+                                <span class="col-4 text-primary">
+                                    @($"{Tools.getDateTH(bp1?.card?.issueDate)} {Tools.getTimeTH(bp1?.card?.issueTime)}" ?? "-")
+                                </span>
+                                <span class="col-2">บัตรหมดอายุ</span>
+                                <span class="col-3 text-primary">@Tools.getDateTH(bp1?.card?.expireDate)</span>
+                            </div>
+                            <div class="row h5">
+                                <span class="col-3">ศาสนา</span>
+                                <span class="col-4 text-primary">
+                                    @(bp1?.card?.religion ?? bp1?.card?.religionOther ?? "-")
+                                </span>
+                                <span class="col-2">เบอร์โทร</span>
+                                <span class="col-3 text-primary">@bp1?.card?.phoneNumber</span>
+                            </div>
+                            <div class="row h5">
+                                <span class="col-4 pe-0 me-0">ที่อยู่ตามหน้าบัตร</span>
+                                @{
+                                    var vaddress = bp1?.card?.address ?? new();
+                                }
+                                <span class="col-9 text-primary">
+                                    @Html.Raw(Tools.GenAddress(vaddress.houseNo, vaddress.villageNo.ToString(), vaddress.alleyWayDesc, vaddress.alleyDesc, vaddress.roadDesc, vaddress.subdistrictDesc, vaddress.districtDesc, vaddress.provinceDesc, vaddress.roadDesc))
+                                </span>
+                            </div>
+                            <div class="row h5">
+                                <span class="col-3">สาเหตุการยกเลิกบัตร</span>
+                                <span class="col-9 text-primary">
+                                    @(bp1?.card?.cancelCause ?? "-")
+                                </span>
+                            </div>
+                        </div>
+                        </div>
+                        <hr />
+                        <div class="text-center">
+                            <button type="button" onclick="cardprev()" class="btn btn-success @cardprev">บัตรถัดไป</button>
+                            <span class="col-3 d-inline-block text-end">@(cardindex+1)</span>
+                            <span class="col-1 d-inline-block">/</span>
+                            <span class="col-3 d-inline-block text-start">@cardtotal</span>
+                            <button type="button" onclick="cardnext()" class="btn btn-success @cardnext">บัตรก่อนหน้า</button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        <!-- #4 Birth-->
+        @if (false)
+        {
+            <div class="row px-1">
+                <div class="col mx-1 card">
+                    <div class="card-body">
+                        <div class="h4">
+                            สูติบัตร (การเกิด)
+                        </div>
+                        <hr />
+                        <div class="row h5">
+                            <span class="col-2">เลประจำตัวประชาชน</span>
+                            <span class="col-4  text-primary"> @(Model?.people?.birth?.personalID.ToString() ?? "-") </span>
+                            <span class="col-2">คำนำหน้า</span>
+                            <span class="col-4  text-primary">
+                                @(Model?.people?.birth?.titleDesc ?? "-")
+                            </span>
+                        </div>
+                        <div class="row h5">
+                            <span class="col-2">คำนำหน้า</span>
+                            <span class="col-4  text-primary">
+                                @(Model?.people?.birth?.titleDesc ?? "-")
+                            </span>
+                            <span class="col-2">ชื่อตัว</span>
+                            <span class="col-4  text-primary">
+                                @(Model?.people?.birth?.firstName ?? "-")
+                            </span>
+                        </div>
+                        <div class="row h5">
+                            <span class="col-2">ชื่อกลาง</span>
+                            <span class="col-4  text-primary">
+                                @(Model?.people?.birth?.middleName ?? "-")
+                            </span>
+                            <span class="col-2">นามสกุล</span>
+                            <span class="col-4  text-primary">
+                                @(Model?.people?.birth?.lastName ?? "-")
+                            </span>
+                        </div>
+                        <div class="row h5">
+                            <span class="col-2">ชื่อกลาง</span>
+                            <span class="col-4  text-primary">
+                                @(Model?.people?.birth?.middleName ?? "-")
+                            </span>
+                            <span class="col-2">นามสกุล</span>
+                            <span class="col-4  text-primary">
+                                @(Model?.people?.birth?.lastName ?? "-")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        <!-- #5 Death -->
+        <div class="row px-1">
+        </div>
+        <!-- #6 -->
+        @{
+            //int cols = 1;
+        }
+        <div class="row px-1 d-flex justify-content-between">
+            @if (false)
+            {
+                <div class="col card">
+                    <div class="card-body">
+                        <div class="h4">
+                            ประวัติการย้ายเข้า
+                        </div>
+                        <hr />
+                        @{
+                            int start_movein = 0;
+                            int total_movein = Model?.people?.moveIn?.move.Count ?? 0;
+                        }
+                        @do {
+                            var imovein = Model?.people?.moveIn?.move?[start_movein] ?? new();
+                            <div class="row h5">
+                                <span class="col-5">วันที่ย้ายเข้า</span>
+                                <span class="col-6 text-primary">@(Tools.getDateTH(imovein?.house?.moveDate))</span>
+                                <span class="col-5">เลขที่เอกสาร</span>
+                                <span class="col-6 text-primary">@(imovein?.documentNo ?? "-")</span> 
+                                <span class="col-4">ที่อยู่</span>
+                                <span class="col-9 text-primary">
+                                    @{
+                                        var vaddress = imovein?.house?.address ?? new();
+                                    }
+                                    @Html.Raw(Tools.GenAddress(vaddress.houseNo, vaddress.villageNo, vaddress.alleyWayDesc, vaddress.alleyDesc, vaddress.roadDesc, vaddress.subdistrictDesc, vaddress.districtDesc, vaddress.provinceDesc, vaddress.roadDesc))
+                                </span>
+                                <span class="col-5">วันที่ย้ายออก</span>
+                                <span class="col-6 text-primary">@Tools.getDateTH(imovein?.oldDateMoveIn)</span>
+                            </div>
+                            start_movein++;
+                        } while (start_movein < total_movein);
+                    </div>
+                </div>
+            }
+            @if (api?.GetPrivilate()?.data_moveout == 1)
+            {
+                <div class="col-4 card">
+                    <div class="card-body">
+                        <div class="h4">
+                            ประวัติการย้ายออก
+                        </div>
+                        <hr />
+                        @{
+                            int start_moveout = 0;
+                            int total_moveout = Model?.people?.moveOut?.move.Count ?? 0;
+                        }
+                        @do {
+                            var imoveout = Model?.people?.moveOut?.move?[start_moveout] ?? new();
+                            <div class="row h5">
+                                <span class="col-5">วันที่ย้ายออก</span>
+                                <span class="col-6 text-primary">@(Tools.getDateTH(imoveout?.house?.moveDate))</span>
+                                <span class="col-5">เลขที่เอกสาร</span>
+                                <span class="col-6 text-primary">@(imoveout?.documentNo)</span>
+                            </div>
+                            <div class="row h5">
+                                <span class="col-5">ที่อยู่</span>
+                                <span class="col-9 text-primary">
+                                    @{
+                                        var vaddress = imoveout?.house?.address ?? new();
+                                    }
+                                    @Html.Raw(Tools.GenAddress(vaddress.houseNo, vaddress.villageNo, vaddress.alleyWayDesc, vaddress.alleyDesc, vaddress.roadDesc, vaddress.subdistrictDesc, vaddress.districtDesc, vaddress.provinceDesc, vaddress.roadDesc))
+                                </span>
+                                <span class="col-5">วันที่ย้ายเข้า</span>
+                                <span class="col-6 text-primary">@Tools.getDateTH(imoveout?.oldDateMoveIn)</span>
+                            </div>
+                            start_moveout++;
+                        } while (start_moveout < total_moveout);
+                    </div>
+                </div>
+            }
+            @if (api?.GetPrivilate()?.data_rename == 1)
+            {
+                <div class="col-4 card">
+                    <div class="card-body">
+                        <div class="h4">
+                            ประวัติการเปลี่ยนชื่อ
+                        </div>
+                        <hr />
+                        @{
+                            var rename = Model?.people?.rename ?? new();
+                        }
+                        <div class="row h5 ps-2">
+                            ชื่อตัว
+                        </div>
+                        <div class="row h5">
+                            <span class="col-5">วันที่</span>
+                            <span class="col-6 text-primary">@(Tools.getDateTH(rename?.firstName?.dateOfChange))</span>
+                            <span class="col-5">ชื่อเดิม</span>
+                            <span class="col-6 text-primary">@(rename?.firstName?.oldValue ?? "-")</span>
+                            <span class="col-5">ชื่อใหม่</span>
+                            <span class="col-6 text-primary">@(rename?.firstName?.newValue ?? "-")</span>
+                        </div>
+                        <div class="row h5 ps-2">
+                            นามสกุล
+                        </div>
+                        <div class="row h5">
+                            <span class="col-5">วันที่</span>
+                            <span class="col-6 text-primary">@(Tools.getDateTH(rename?.lastName?.dateOfChange))</span>
+                            <span class="col-5">นามสกุลเดิม</span>
+                            <span class="col-6 text-primary">@(rename?.lastName?.oldValue ?? "-")</span>
+                            <span class="col-5">นามสกุลใหม่</span>
+                            <span class="col-6 text-primary">@(rename?.lastName?.newValue ?? "-")</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <!-- #7 -->
+        <div class="row px-1">
+            @if (false)
+            {
+                <div class="col card">
+                    <div class="card-body">
+                        <div class="h4">
+                            ประวัติการสมรส
+                        </div>
+                        <hr />
+                        @{
+                            int start_marry = 0;
+                            int total_marry = Model?.people?.marry?.allMarry?.Count ?? 0;
+                        }
+                        @do
+                        {
+                            var vmarry = Model?.people?.marry?.allMarry?[start_marry] ?? new();
+                            if (Model?.people?.pop?.genderCode == 1)
+                            {
+                                <div class="row h5">
+                                    <span class="col-5">เลขประจำตัวประชาชน</span>
+                                    <span class="col-6 text-primary">@(Tools.GenID(vmarry?.femalePID))</span>
+                                    <span class="col-5">ชื่อ สกุล</span>
+                                    <span class="col-6 text-primary">@(vmarry?.femaleFullnameAndRank ?? "-")</span>
+                                    <span class="col-5">เลขที่เอกสาร</span>
+                                    <span class="col-6 text-primary">@((vmarry?.marryID > 0) ? vmarry?.marryID.ToString() : "-")</span>
+                                    <span class="col-5">วันที่ เวลา</span>
+                                    <span class="col-6 text-primary">@($"{Tools.getDateTH(vmarry?.marryDate)} {Tools.getTimeTH(vmarry?.marryTime)}")</span>
+                                </div>
+                            } else
+                            {
+                                <div class="row h5">
+                                    <span class="col-5">เลขประจำตัวประชาชน</span>
+                                    <span class="col-6 text-primary">@(Tools.GenID(vmarry?.malePID))</span>
+                                    <span class="col-5">ชื่อ สกุล</span>
+                                    <span class="col-6 text-primary">@(vmarry?.maleFullnameAndRank ?? "-")</span>
+                                    <span class="col-5">เลขที่เอกสาร</span>
+                                    <span class="col-6 text-primary">@((vmarry?.marryID > 0) ? vmarry?.marryID.ToString() : "-")</span>
+                                    <span class="col-5">วันที่ เวลา</span>
+                                    <span class="col-6 text-primary">@($"{Tools.getDateTH(vmarry?.marryDate)} {Tools.getTimeTH(vmarry?.marryTime)}")</span>
+                                </div>                                
+                            }
+                            start_marry++;
+                        } while (start_marry < total_marry);
+                    </div>
+                </div>
+            }
+            @if (api?.GetPrivilate()?.data_divorce == 1)
+            {
+                <div class="col card">
+                    <div class="card-body">
+                        <div class="h4">
+                            ประวัติการหย่า
+                        </div>
+                        <hr />
+                        @{
+                            int start_divorce = 0;
+                            int total_divorce = Model?.people?.divorce?.allDiv?.Count ?? 0;
+                        }
+                        @do
+                        {
+                            var vdivorce = Model?.people?.divorce?.allDiv?[start_divorce] ?? new();
+                            if (Model?.people?.pop?.genderCode == 1)
+                            {
+                                <div class="row h5">
+                                    <span class="col-5">เลขประจำตัวประชาชน</span>
+                                    <span class="col-6 text-primary">@(Tools.GenID(vdivorce?.femalePID))</span>
+                                    <span class="col-5">ชื่อ สกุล</span>
+                                    <span class="col-6 text-primary">@(vdivorce?.femaleFullnameAndRank ?? "-")</span>
+                                    <span class="col-5">เลขที่เอกสารสมรส</span>
+                                    <span class="col-6 text-primary">@((vdivorce?.marryID > 0) ? vdivorce?.marryID.ToString() : "-")</span>
+                                    <span class="col-5">วันที่ เวลา</span>
+                                    <span class="col-6 text-primary">@($"{Tools.getDateTH(vdivorce?.marryDate)} {Tools.getTimeTH(vdivorce?.marryTime)}")</span>
+                                    <span class="col-5">เลขที่เอกสารการหย่า</span>
+                                    <span class="col-6 text-primary">@((vdivorce?.divorceID > 0) ? vdivorce?.divorceID.ToString() : "-")</span>
+                                    <span class="col-5">วันที่ เวลา</span>
+                                    <span class="col-6 text-primary">@($"{Tools.getDateTH(vdivorce?.divorceDate)} {Tools.getTimeTH(vdivorce?.divorceTime)}")</span>
+                                </div>
+                            } else
+                            {
+                                <div class="row h5">
+                                    <span class="col-5">เลขประจำตัวประชาชน</span>
+                                    <span class="col-6 text-primary">@(Tools.GenID(vdivorce?.malePID))</span>
+                                    <span class="col-5">ชื่อ สกุล</span>
+                                    <span class="col-6 text-primary">@(vdivorce?.maleFullnameAndRank ?? "-")</span>
+                                    <span class="col-5">เลขที่เอกสาร</span>
+                                    <span class="col-6 text-primary">@((vdivorce?.marryID > 0) ? vdivorce?.marryID.ToString() : "-")</span>
+                                    <span class="col-5">วันที่ เวลา</span>
+                                    <span class="col-6 text-primary">@($"{Tools.getDateTH(vdivorce?.marryDate)} {Tools.getTimeTH(vdivorce?.marryTime)}")</span>
+                                    <span class="col-5">เลขที่เอกสารการหย่า</span>
+                                    <span class="col-6 text-primary">@((vdivorce?.divorceID > 0) ? vdivorce?.divorceID.ToString() : "-")</span>
+                                    <span class="col-5">วันที่ เวลา</span>
+                                    <span class="col-6 text-primary">@($"{Tools.getDateTH(vdivorce?.divorceDate)} {Tools.getTimeTH(vdivorce?.divorceTime)}")</span>
+                                </div>                                
+                            }
+                            start_divorce++;
+                        } while (start_divorce < total_divorce);
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    var list_bp1 = [@Html.Raw(Tools.CardList(Model?.people?.cardDetail?.cardbp ?? new()))];
+    var cardindex = @cardindex;
+</script>
+
+
+<div class="d-none">
+    <div class="printfile">
+        @if (Model?.people?.pop != null)
+        {
+            <div class="page-break">
+                <br />
+                <br />
+                <div class="text-center">
+                    <img src="~/img/logo_k.png" />
+                </div>
+                <div class="text-center">
+                    <div class="my-0">
+                        แบบรับรองรายการทะเบียนราษฎร
+                    </div>
+                    <div class="my-0">
+                        สำนักบริหารการทะเบียน กรมการปกครอง กระทรวงมหาดไทย
+                    </div>
+                </div>
+                <br />
+                <hr />
+                <br />
+                <div class="row p-0">
+                    <div class="col-2">
+                        เลขประจำตัวประชาชน
+                    </div>
+                    <div class="col-4">
+                        @Model.people.pop.pid.ToString("0-0000-00000-00-0")
+                    </div>
+                    <div class="col-2 px-0">
+                        เลขรหัสประจำบัาน
+                    </div>
+                    <div class="col-4">
+                        @Model.people.house.houseID.ToString("0000-000000-0")
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        ชื่อ
+                    </div>
+                    <div class="col-4">
+                        @Model.people.pop.fullnameAndRank
+                    </div>
+                    <div class="col-1">
+                        เพศ
+                    </div>
+                    <div class="col-1">
+                        @Model.people.pop.genderDesc
+                    </div>
+                    <div class="col-1">
+                        สัญชาติ
+                    </div>
+                    <div class="col-3">
+                        @Model.people.pop.nationalityDesc
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        เกิดเมื่อ
+                    </div>
+                    <div class="col-2">
+                        @Tools.getDateTH(Model.people.pop.dateOfBirth)
+                    </div>
+                    <div class="col-2 text-center">
+                        อายุ
+                        &nbsp;&nbsp;
+                        @Model.people.pop.age
+                        &nbsp;&nbsp;
+                        ปี
+                    </div>
+                    <div class="col-2">
+                        สถานภาพ
+                    </div>
+                    <div class="col-4">
+                        @Model.people.pop.ownerStatusDesc
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        บิดา
+                    </div>
+                    <div class="col-4">
+                        @((Model.people.pop.fatherPersonalID > 0) ? Model.people.pop.fatherPersonalID.ToString("0-0000-00000-00-0") : "")
+                    </div>
+                    <div class="col-2">
+                        ชื่อ
+                    </div>
+                    <div class="col-4">
+                        @Model.people.pop.fatherName
+                    </div>
+                    <div class="col-2">
+                        สัญชาติ
+                    </div>
+                    <div class="col-4">
+                        @Model.people.pop.fatherNationalityDesc
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        มารดา
+                    </div>
+                    <div class="col-4">
+                        @((Model.people.pop.motherPersonalID > 0) ? Model.people.pop.motherPersonalID.ToString("0-0000-00000-00-0") : "")
+                    </div>
+                    <div class="col-2">
+                        ชื่อ
+                    </div>
+                    <div class="col-4">
+                        @Model.people.pop.motherName
+                    </div>
+                    <div class="col-2">
+                        สัญชาติ
+                    </div>
+                    <div class="col-4">
+                        @Model.people.pop.motherNationalityDesc
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        ที่อยู่
+                    </div>
+                    <div class="col">
+                        @{
+                        var vaddress = Model?.people?.house ?? new House();
+                        }
+                        <span>@Html.Raw(Tools.GenAddress(vaddress.houseNo, vaddress.villageNo.ToString(), vaddress.alleyWayDesc, vaddress.alleyDesc, vaddress.roadDesc, vaddress.subdistrictDesc, vaddress.districtDesc, vaddress.provinceDesc, vaddress.roadDesc))</span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        เข้ามาเมื่อวันที่
+                    </div>
+                    <div class="col">
+                        @Tools.getDateTH(Model?.people?.pop?.dateOfMoveIn)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        บันทึกเพิ่มเติม
+                    </div>
+                    <div class="col">
+                        @(Model?.people?.pop?.statusOfPersonDesc) <br />
+                        <br />
+                        <br />
+                        <br />
+                        <br />
+                        <br />
+                        <br />
+                        <br />
+                        <br />
+                    </div>
+                </div>
+                <br />
+                <br />
+
+                <hr />
+                <div class="row">
+                    <div class="col-2">
+                        ข้อมูล ณ วันที่ 
+                    </div>
+                    <div class="col text-end">
+                        @Tools.getDateTH(Tools.getDateRow())
+                    </div>
+                </div>
+                <hr />
+                <div class="row">
+                    <div class="col text-center">
+                        ขอรับรองว่าเป็นรายการจากข้อมูลทะเบียนราษฎร
+                        <br />
+                        <br />
+                        <br />
+                        <br />
+                        @($"({api.getUserLK().title}{api.getUserLK().fname} {api.getUserLK().mname} {api.getUserLK().lname})")
+                        <br />
+                        @($"{api.getUserLK().office}")
+                        <br />
+                        <span>สำนักงานตำรวจแห่งชาติ</span>
+                    </div>
+                </div>
+            </div>
+        }
+        @if (Model?.people?.card != null)
+        {
+            <div class="page-break">
+                <br />
+                <br />
+                <div class="text-center">                    
+                    <img src="~/img/logo_k.png" />
+                </div>
+                <div class="text-center">
+                    <div class="my-0">
+                        แบบรับรองรายการทะเบียนบัตรประจำตัวประชาชน
+                    </div>
+                    <div class="my-0">
+                        สำนักบริหารการทะเบียน กรมการปกครอง กระทรวงมหาดไทย
+                    </div>
+                </div>
+                <hr />
+                <div class="row">
+                    <div class="col text-center">                        
+                        @if (Model?.people?.cardImage?.image != null)
+                        {
+                            <img src="@($"{Model?.people?.cardImage?.mineType},{Model?.people?.cardImage?.image}")" width="270" height="326" />
+                        } else {
+                            <img src="/img/avatars/avatar-999.svg" class="rounded-pill" />
+                        } 
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        เลขประจำตัวประชาชน
+                    </div>
+                    <div class="col-4">
+                        @Model.people.pop.pid.ToString("0-0000-00000-00-0")
+                    </div>
+                    <div class="col-2 px-0">
+                        เลขรหัสประจำบัาน
+                    </div>
+                    <div class="col-4">
+                        @Model.people.house.houseID.ToString("0000-000000-0")
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        ชื่อ
+                    </div>
+                    <div class="col-4">
+                        @Model.people.pop.fullnameAndRank
+                    </div>
+                    <div class="col-1">
+                        เพศ
+                    </div>
+                    <div class="col-1">
+                        @Model.people.pop.genderDesc
+                    </div>
+                    <div class="col-1">
+                        สัญชาติ
+                    </div>
+                    <div class="col-3">
+                        @Model.people.pop.nationalityDesc
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        เกิดเมื่อ
+                    </div>
+                    <div class="col-2">
+                        @Tools.getDateTH(Model.people.pop.dateOfBirth)
+                    </div>
+                    <div class="col-2 text-center">
+                        อายุ
+                        &nbsp;&nbsp;
+                        @Model.people.pop.age
+                        &nbsp;&nbsp;
+                        ปี
+                    </div>
+                    <div class="col-2">
+                        สถานภาพ
+                    </div>
+                    <div class="col-4">
+                        @Model.people.pop.ownerStatusDesc
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        เลขที่เอกสาร
+                    </div>
+                    <div class="col-4">
+                        @Model.people.card.documentNumber
+                    </div>
+                    <div class="col-2">
+                        เบอร์โทรศัพท์
+                    </div>
+                    <div class="col-4">
+                        @Model.people.card.phoneNumber
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        กรุ๊ปเลือด
+                    </div>
+                    <div class="col-4">
+                        @Model?.people?.card.blood
+                    </div>
+                    <div class="col-2">
+                        ศาสานา
+                    </div>
+                    <div class="col-4">
+                        @(Model?.people?.card.religion ?? Model?.people?.card.religionOther)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2" style="font-size:14px;">
+                        ที่อยู่ ณ ทำบัตร
+                    </div>
+                    <div class="col">
+                        @{
+                            var vaddress = Model?.people?.card.address ?? new();
+                        }
+                        <span>@Html.Raw(Tools.GenAddress(vaddress.houseNo, vaddress.villageNo.ToString(), vaddress.alleyWayDesc, vaddress.alleyDesc, vaddress.roadDesc, vaddress.subdistrictDesc, vaddress.districtDesc, vaddress.provinceDesc, vaddress.roadDesc))</span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        วันที่ทำบัตร
+                    </div>
+                    <div class="col-4">
+                        @Tools.getDateTH(Model?.people?.card?.issueDate)
+                    </div>
+                    <div class="col-2">
+                        วันที่หมดอายุ
+                    </div>
+                    <div class="col-4">
+                        @Tools.getDateTH(Model?.people?.card?.expireDate)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        เหตุแจ้งยกเลิก
+                    </div>
+                    <div class="col">
+                        @(Model?.people?.card?.cancelCause) <br />
+                        <br />
+                        <br />
+                    </div>
+                </div>
+                <hr />
+                <div class="row">
+                    <div class="col-2">
+                        ข้อมูล ณ วันที่
+                    </div>
+                    <div class="col text-end">
+                        @Tools.getDateTH(Tools.getDateRow())
+                    </div>
+                </div>
+                <hr />
+                <div class="row">
+                    <div class="col text-center">
+                        ขอรับรองว่าเป็นรายการจากข้อมูลทะเบียนบัตรประจำตัวประชาชน
+                        <br />
+                        <br />
+                        <br />
+                        <br />
+                        @($"({api.getUserLK().title}{api.getUserLK().fname} {api.getUserLK().mname} {api.getUserLK().lname})")
+                        <br />
+                        @($"{api.getUserLK().office}")
+                        <br />
+                        <span>สำนักงานตำรวจแห่งชาติ</span>
+                    </div>
+                </div>
+            </div>
+        }
+        @if (Model?.people?.child?.totalChild > 0)
+        {
+            int i = 0;
+            int pagevn = 1;
+            int totalPage = (int)( (Model?.people?.child?.totalChild / 5) + 1 );
+            while (Model?.people?.child?.totalChild > i)
+            {
+                <div class="page-break">
+                    <br />
+                    <br />
+                    <div class="text-center">
+                        <img src="~/img/logo_k.png" />
+                    </div>
+                    <div class="text-center">
+                        <div class="my-0">
+                            แบบรับรองรายการทะเบียนบุตร
+                        </div>
+                        <div class="my-0">
+                            สำนักบริหารการทะเบียน กรมการปกครอง กระทรวงมหาดไทย
+                        </div>
+                    </div>
+                    <br />
+                    <hr />
+                    <br />
+                    <div class="row">
+                        <div class="col-2">
+                            เลขประจำตัวประชาชน
+                        </div>
+                        <div class="col-4">
+                            @Model?.people?.pop?.pid.ToString("0-0000-00000-00-0")
+                        </div>
+                        <div class="col-2 px-0">
+                            เลขรหัสประจำบัาน
+                        </div>
+                        <div class="col-4">
+                            @Model?.people?.house?.houseID.ToString("0000-000000-0")
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2">
+                            ชื่อ
+                        </div>
+                        <div class="col-4">
+                            @Model?.people?.pop?.fullnameAndRank
+                        </div>
+                        <div class="col-1">
+                            เพศ
+                        </div>
+                        <div class="col-1">
+                            @Model?.people?.pop?.genderDesc
+                        </div>
+                        <div class="col-1">
+                            สัญชาติ
+                        </div>
+                        <div class="col-3">
+                            @Model?.people?.pop?.nationalityDesc
+                        </div>
+                    </div>
+                    <hr />
+                    @for (int n=0; n<5; n++)                
+                    {
+                        if (Model?.people?.child?.totalChild > i)
+                        {
+                            var c = Model.people.child.child[i];
+                            <div class="row">
+                                <div class="col-3">
+                                    เลขประจำตัวประชาชน
+                                </div>
+                                <div class="col-3">
+                                    @c.personalID.ToString("0-0000-00000-00-0")
+                                </div>
+                                <div class="col-2">
+                                    ชื่อ
+                                </div>
+                                <div class="col-4">
+                                    @((!string.IsNullOrEmpty(c?.titleDesc)) ? $"{c?.titleDesc}{c?.firstName} {c?.middleName} {c?.lastName}" : "-")
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2">
+                                    อายุ
+                                    &nbsp;&nbsp;
+                                    @Model.people.pop.age
+                                    &nbsp;&nbsp;
+                                    ปี
+                                </div>
+                                <div class="col-1">
+                                    สัญชาติ
+                                </div>
+                                <div class="col-3">
+                                    @c.nationalityDesc
+                                </div>
+                                <div class="col-2">
+                                    สถานะบุคคล
+                                </div>
+                                <div class="col-4">
+                                    @c.statusOfPersonDesc
+                                </div>
+                            </div>
+                            <br />
+                        } else {
+                            <br />
+                            <br />
+                            <br />
+                        }
+
+                        i++;
+                    }
+
+                    <hr />
+                    <div class="row">
+                        <div class="col-2">
+                            ข้อมูล ณ วันที่
+                        </div>
+                        <div class="col text-end">
+                            @Tools.getDateTH(Tools.getDateRow())
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            ขอรับรองว่าเป็นรายการจากข้อมูลทะเบียนบัตรประจำตัวประชาชน
+                            <br />
+                            <br />
+                            <br />
+                            <br />
+                            @($"({api?.getUserLK()?.title}{api?.getUserLK()?.fname} {api?.getUserLK()?.mname} {api?.getUserLK()?.lname})")
+                            <br />
+                            @($"{api?.getUserLK()?.office}")
+                            <br />
+                            <span>สำนักงานตำรวจแห่งชาติ</span>
+                        </div>
+                        <div class="col-12">
+                            <br />
+                        </div>
+                        <div class="col-12 text-center">
+                            หน้า @pagevn / @totalPage
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+@* 
+@if (api?.GetPrivilate()?.data_card == 1 && Model?.people?.cardImage?.image != null)
+{
+    CardBP1 bp1 = Model?.people?.cardDetail?.cardbp?[0] ?? new();
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">รูปหน้า</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center">
+                        <img src="@($"{Model?.people?.cardImage?.mineType},{Model?.people?.cardImage?.image}")">
+                        <div class="row mt-1">
+                            <div class="col-12">
+                                ชื่อ สกุล @Model?.people?.pop?.fullnameAndRank
+                            </div>
+                            <div class="col-12">
+                                เลขประจำตัวประชาชน @Model?.people?.pop?.pid.ToString("0 0000 00000 00 0")
+                            </div>
+                            <div class="col-12">
+                                เลขประจำบัตรประจำตัวประชาชน @bp1?.card?.documentNumber
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+@if (api?.GetPrivilate()?.data_card == 1 && Model?.people?.cardImage?.image != null)
+{
+    CardBP1 bp1 = Model?.people?.cardDetail?.cardbp?[cardindex] ?? new();
+    @if (!string.IsNullOrEmpty(bp1?.cardImage?.image))
+    {
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">รูปหน้า</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center">
+                            <img src="@($"{bp1?.cardImage?.mineType},{bp1?.cardImage?.image}")">
+                            <div class="row  mt-1">
+                                <div class="col-12">
+                                    ชื่อ สกุล @Model?.people?.pop?.fullnameAndRank
+                                </div>
+                                <div class="col-12">
+                                    เลขประจำตัวประชาชน @Model?.people?.pop?.pid.ToString("0 0000 00000 00 0")
+                                </div>
+                                <div class="col-12">
+                                    เลขประจำบัตรประจำตัวประชาชน @bp1?.card?.documentNumber
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    }
+} *@
+                        
+@section Scripts
+{    
+    <script src="~/js/printThis.js"></script>
+    <script>
+        const onprint = () => {
+            $(".printfile").printThis();
+        }
+
+    </script>
+}

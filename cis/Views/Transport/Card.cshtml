@@ -1,0 +1,76 @@
+﻿@model CISApps.Models.Searchs
+
+@{
+    ViewData["Title"] = "Index";
+    string d_none = "";
+    if (string.IsNullOrEmpty(ViewData["error"]?.ToString() ?? "")) d_none = "d-none";
+    int i = 0;
+    int total = (Model?.people?.transportcard?.Property1?.Count() ?? 0);
+}
+ 
+<div class="h1">
+    ข้อมูลใบขับขี่
+</div>
+
+<div class="card">
+    <div class="card-header bg-light">
+        <span class="form-label">ค้นหาด้วยเลขประจำตัวประชาชน</span>
+        <span class="col-3"><input name="spid" id="spid" value="@(Model?.people?.pop?.pid.ToString() ?? ((api.pid_test==0L)?"":api.pid_test.ToString()))" class="pid form-control d-inline-block" style="width: 25%;" /></span>
+        <span><button type="button" class="btn btn-primary" onclick="searchTransportCard()">ค้นหา</button></span>
+    </div>
+    <div class="card-body" id="ckan">
+        <div id="errorinfo" class="text-center bg-danger text-white rounded @d_none">
+            @ViewData["error"]
+        </div>
+        @do
+        {
+            @if (i > 0)
+            {
+                <hr />
+            }
+            <span class="col-2 d-inline-block align-top">เลขที่ใบอนุญาต</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transportcard?.Property1[i]?.driverLicenceInfo.pltNo ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ชื่อชนิดใบอนุญาตขับรถ</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transportcard?.Property1[i]?.driverLicenceInfo?.pltDesc ?? "-")</span>
+            
+            <span class="col-2 d-inline-block align-top">เลขที่เอกสาร</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transportcard?.Property1[i]?.driverLicenceInfo?.docNo ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">วันที่ออกใบอนุญาต</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transportcard?.Property1[i]?.driverLicenceInfo?.issDate ?? "-")</span>
+            
+            <span class="col-2 d-inline-block align-top">วันที่สิ้นอายุใบอนุญาต</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transportcard?.Property1[i]?.driverLicenceInfo?.expDate ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">รายละเอียดข้อจำกัดการใช้<br />ใบอนุญาตของคนพิการ</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transportcard?.Property1[i]?.driverLicenceInfo?.conditionDesc ?? "-")</span>
+            
+            <span class="col-2 d-inline-block align-top">คำอธิบายผลลัพธ์ของ กระบวนการ</span>
+            <span class="col-3 d-inline-block align-top text-primary">@(Model?.people?.transportcard?.Property1[i]?.driverLicenceInfo?.message ?? "-")</span>
+            <span class="col-2 d-inline-block align-top">ชื่อ สกุล</span>
+            <span class="col-3 d-inline-block align-top text-primary">@((Model?.people?.transportcard?.Property1[i]?.driverLicenceInfo?.fName == null) ? "-" : (Model?.people?.transportcard?.Property1[i]?.driverLicenceInfo?.titleDesc + Model?.people?.transportcard?.Property1[i]?.driverLicenceInfo?.fName + " " + Model?.people?.transportcard?.Property1[i]?.driverLicenceInfo?.lName))</span>
+
+            var waddr = Model?.people?.transportcard?.Property1[i]?.driverLicenceInfo ?? null;
+            
+            <span class="col-2 d-inline-block align-top">ที่อยู่</span>
+            <span class="col-12 d-inline-block align-top text-primary">@Html.Raw(Tools.GenAddress((waddr?.addrNo ?? ""), (waddr?.villageNo.ToString() ?? "0"), "", (waddr?.soi ?? ""), (waddr?.street ?? ""), "", "", (waddr?.locDesc ?? "")))</span>
+            
+            i++;
+        } while (i < total);
+    </div>
+</div>
+<script>
+    async function searchTransportCard() {
+        try {
+            var spid = document.getElementById('spid').value
+            spid = spid.replace(/-/g, '').trim()
+            while (spid.length < 13) {
+                spid = '0' + spid
+            }
+            if (await runTransportCard(spid)) {
+                document.getElementById("xyspid").value = spid;
+                document.getElementById('flk').submit()
+            }
+        } catch (error) {
+            document.getElementById('errorinfo').innerHTML = `พบปัญหา ${error}`
+        }
+    }
+</script>

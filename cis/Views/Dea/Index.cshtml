@@ -1,0 +1,136 @@
+﻿@model CISApps.Models.Searchs
+
+@{
+    ViewData["Title"] = "Index";
+    string d_none = "";
+    if (string.IsNullOrEmpty(ViewData["error"]?.ToString() ?? "")) d_none = "d-none";
+}
+
+<div class="h1">
+    ข้อมูล ปปง.
+</div>
+
+<div class="card">
+    <div class="card-header bg-light">
+        <span class="form-label">ค้นหาด้วยเลขประจำตัวประชาชน</span>
+        <span class="col-3"><input name="spid" id="spid" value="@(Model?.people?.pop?.pid.ToString() ?? ((api.pid_test==0L)?"":api.pid_test.ToString()))" class="pid form-control d-inline-block" style="width: 25%;" /></span>
+        <span><button type="button" class="btn btn-primary" onclick="searchDea()">ค้นหา</button></span>
+    </div>
+    <div class="card-body" id="ckan">
+        <div id="errorinfo" class="text-center bg-danger text-white rounded @d_none">
+            @ViewData["error"]
+        </div>
+        <span class="col-2 d-inline-block">เลขที่คำสั่ง</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dea?.commandno ?? "-")</span>
+        <span class="col-2 d-inline-block">ประเภทบุคคล</span>
+        <span class="col-3 d-inline-block text-primary">@((Model?.people?.dea?.entitytype == "ENTITY" ? "นิติบุคคล" : (Model?.people?.dea?.entitytype == "PERSON" ? "บุคคลธรรมดา" : null)) ?? "-")</span>
+        <span class="col-2 d-inline-block">สถานะของบุคคล/นิติบุคคล</span>
+        <span class="col-3 d-inline-block text-primary">@((Model?.people?.dea?.status == "1" ? "บุคคลที่ถูกกำหนด" : (Model?.people?.dea?.status == "2" ? "เพิกถอน" : null)) ?? "-")</span>
+        <span class="col-2 d-inline-block">วันที่ประกาศ</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dea?.announcedate ?? "-")</span>
+        <span class="col-2 d-inline-block">วันที่สิ้นสุดคำสั่ง</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dea?.announcedateend ?? "-")</span>
+        <br />
+        <br />
+        <span class="col-12 d-inline-block fw-bold">ข้อมูลภาษาไทย</span>
+        <span class="col-2 d-inline-block">รหัสประจำตัวประชาชน</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.personalid ?? "-")</span>
+        <span class="col-2 d-inline-block">คำนำหน้า</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dea?.titleth ?? "-")</span>
+        <span class="col-2 d-inline-block">ชื่อตัว</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dea?.firstnameth ?? "-")</span>
+        <span class="col-2 d-inline-block">ชื่อรอง</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dea?.middlename ?? "-")</span>
+        <span class="col-2 d-inline-block">นามสกุล</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dea?.lastnameth ?? "-")</span>
+        <span class="col-2 d-inline-block">ชื่อต่อไป</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dea?.namefour ?? "-")</span>
+        <span class="col-2 d-inline-block">ฉายา 1</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dea?.alias1 ?? "-")</span>
+        <span class="col-2 d-inline-block">ฉายา 2</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dea?.alias2 ?? "-")</span>
+        <span class="col-2 d-inline-block">ฉายา 3</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dea?.alias3 ?? "-")</span>
+        <br/>
+        <br />
+        <span class="col-12 d-inline-block fw-bold">ข้อมูลภาษาอังกฤษ</span>
+        <span class="col-2 d-inline-block">เลขที่หนังสือเดินทาง</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.passportno ?? "-")</span>
+        <span class="col-2 d-inline-block">คำนำหน้า</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dea?.titleen ?? "-")</span>
+        <span class="col-2 d-inline-block">ชื่อตัว</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dea?.firstnameen ?? "-")</span>
+        <span class="col-2 d-inline-block">นามสกุล</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dea?.lastnameth ?? "-")</span>
+        <span class="col-2 d-inline-block">เลขที่หนังสือเดินทาง 2</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dea?.passportno2 ?? "-")</span>
+        <span class="col-2 d-inline-block">เลขที่หนังสือเดินทาง 3</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dea?.passportno3 ?? "-")</span>
+        <span class="col-2 d-inline-block">เลขที่หนังสือเดินทาง 4</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dea?.passportno4 ?? "-")</span>
+        <span class="col-2 d-inline-block">เลขที่หนังสือเดินทาง 5</span>
+        <span class="col-3 d-inline-block text-primary">@(Model?.people?.dea?.passportno5 ?? "-")</span>
+        <br />
+        <br />
+        <span class="col-12 d-inline-block fw-bold">ข้อมูลส่วนบุคคล</span>
+        <span class="col-2 d-inline-block">อาชีพ</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.occupation ?? "-")</span>
+        <span class="col-2 d-inline-block">ตำแหน่ง</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.position ?? "-")</span>
+        <span class="col-2 d-inline-block">วันเดือนปีที่เกิด</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.birthday ?? "-")</span>
+        <span class="col-2 d-inline-block">จังหวัด/รัฐ/เมืองที่เกิด</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.birthcity ?? "-")</span>
+        <span class="col-2 d-inline-block">ประเทศที่เกิด</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.birthcountry ?? "-")</span>
+        <span class="col-2 d-inline-block">สัญชาติ</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.nationality ?? "-")</span>
+        <span class="col-2 d-inline-block">เลขที่ของหลักฐานแสดงตนอื่น ๆ</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.proofno ?? "-")</span>
+        <span class="col-2 d-inline-block">คำอธิบายชนิดของเลขที่หลักฐานแสดงตนอื่น ๆ</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.proofdesc ?? "-")</span>
+        <br />
+        <br />
+        <span class="col-12 d-inline-block fw-bold">ที่อยู่ ตามทะเบียนบ้าน</span>
+        <span class="col-2 d-inline-block">ที่อยู่</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.address ?? "-")</span>
+        <span class="col-2 d-inline-block">แขวง/ตำบล</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.subdistrict ?? "-")</span>
+        <span class="col-2 d-inline-block">เขต/อำเภอ</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.subdistrict ?? "-")</span>
+        <span class="col-2 d-inline-block">จังหวัด/รัฐ/เมือง</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.province ?? "-")</span>
+        <span class="col-2 d-inline-block">ประเทศ</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.country ?? "-")</span>
+        <br />
+        <br />
+        <span class="col-12 d-inline-block fw-bold">ที่อยู่ ที่ติดต่อได้</span>
+        <span class="col-2 d-inline-block">ที่อยู่</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.address2 ?? "-")</span>
+        <span class="col-2 d-inline-block">แขวง/ตำบล</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.subdistrict2 ?? "-")</span>
+        <span class="col-2 d-inline-block">เขต/อำเภอ</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.subdistrict2 ?? "-")</span>
+        <span class="col-2 d-inline-block">จังหวัด/รัฐ/เมือง</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.province2 ?? "-")</span>
+        <span class="col-2 d-inline-block">ประเทศ</span>
+        <span class="col-3 d-inline-block pid text-primary">@(Model?.people?.dea?.country2 ?? "-")</span>
+    </div>
+</div>
+<script>
+    async function searchDea() {
+        try {
+            var spid = document.getElementById('spid').value
+            spid = spid.replace(/-/g, '').trim()
+            while (spid.length < 13) {
+                spid = '0' + spid
+            }
+            if (await runDea(spid)) {
+                document.getElementById("xyspid").value = spid;
+                document.getElementById('flk').submit()
+            }
+        } catch (error) {
+            document.getElementById('errorinfo').innerHTML = `พบปัญหา ${error}`
+        }
+    }
+</script>
