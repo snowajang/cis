@@ -47,17 +47,20 @@ namespace cis.Controllers
                 string token="";
                 try
                 {
-                    if (string.IsNullOrEmpty(login?.error))
+                    if (!string.IsNullOrEmpty(login.error))
                     {
                         return View(login);
                     }
                     long ipid = long.Parse(login.pid);
-                    var api = new Api();
-                    api.setDomain("https://lk2proxy.bora.dopa.go.th");
-                    var response = await api.POST("/api/center/login/auth", new { loginType = 2, officeID=333, accessToken = login.accessToken, pid = ipid });
+                    var api = new Api("https://web-app.bora.dopa.go.th/meetrens");
+                    //api.setDomain("https://web-app.bora.dopa.go.th/meetrens");
+                    var response = await api.POST(
+                        "/api/center/login/confirm", 
+                        new { loginType = 2, officeID=333, accessToken = login.access_token.Trim(), personalID = ipid }
+                    );
                     var data = await response.Content.ReadAsStringAsync();
                     var json = data.ToObjectJson<ResponseLogin>();
-                    if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                    if (response.StatusCode != System.Net.HttpStatusCode.Created)
                     {
                         if (json?.errorNumber > 0)
                         {
@@ -69,7 +72,7 @@ namespace cis.Controllers
                         }
                         return View(login);
                     }
-                    token = json?.token;
+                    token = json?.token ?? "";
                 }
                 catch (Exception ex)
                 {
@@ -78,7 +81,7 @@ namespace cis.Controllers
                 }
                 // login 
                 var identity = new ClaimsIdentity("Cookies", ClaimTypes.Name, ClaimTypes.Role);
-                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, login.uname));
+                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, login.name));
                 identity.AddClaim(new Claim(ClaimTypes.Name, login.pid));
                 identity.AddClaim(new Claim("lktoken", token));
                 var principal = new ClaimsPrincipal(identity);

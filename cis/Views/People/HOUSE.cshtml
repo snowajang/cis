@@ -763,13 +763,13 @@
                         เลขประจำตัวประชาชน
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.pid.ToString("0-0000-00000-00-0")
+                        @Model?.people?.pop?.pid.ToString("0-0000-00000-00-0")
                     </div>
                     <div class="col-2 px-0">
                         เลขรหัสประจำบัาน
                     </div>
                     <div class="col-4">
-                        @Model.people.house.houseID.ToString("0000-000000-0")
+                        @Model?.people?.house?.houseID.ToString("0000-000000-0")
                     </div>
                 </div>
                 <div class="row">
@@ -777,19 +777,19 @@
                         ชื่อ
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.fullnameAndRank
+                        @Model?.people?.pop?.fullnameAndRank
                     </div>
                     <div class="col-1">
                         เพศ
                     </div>
                     <div class="col-1">
-                        @Model.people.pop.genderDesc
+                        @Model?.people?.pop?.genderDesc
                     </div>
                     <div class="col-1">
                         สัญชาติ
                     </div>
                     <div class="col-3">
-                        @Model.people.pop.nationalityDesc
+                        @Model?.people?.pop?.nationalityDesc
                     </div>
                 </div>
                 <div class="row">
@@ -797,12 +797,12 @@
                         เกิดเมื่อ
                     </div>
                     <div class="col-2">
-                        @Tools.getDateTH(Model.people.pop.dateOfBirth)
+                        @Tools.getDateTH(Model?.people?.pop?.dateOfBirth)
                     </div>
                     <div class="col-2 text-center">
                         อายุ
                         &nbsp;&nbsp;
-                        @Model.people.pop.age
+                        @Model?.people?.pop?.age
                         &nbsp;&nbsp;
                         ปี
                     </div>
@@ -810,7 +810,7 @@
                         สถานภาพ
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.ownerStatusDesc
+                        @Model?.people?.pop?.ownerStatusDesc
                     </div>
                 </div>
                 <div class="row">
@@ -818,19 +818,19 @@
                         บิดา
                     </div>
                     <div class="col-4">
-                        @((Model.people.pop.fatherPersonalID > 0) ? Model.people.pop.fatherPersonalID.ToString("0-0000-00000-00-0") : "")
+                        @((Model?.people?.pop?.fatherPersonalID > 0) ? Model?.people?.pop?.fatherPersonalID.ToString("0-0000-00000-00-0") : "")
                     </div>
                     <div class="col-2">
                         ชื่อ
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.fatherName
+                        @Model?.people?.pop?.fatherName
                     </div>
                     <div class="col-2">
                         สัญชาติ
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.fatherNationalityDesc
+                        @Model?.people?.pop?.fatherNationalityDesc
                     </div>
                 </div>
                 <div class="row">
@@ -838,19 +838,19 @@
                         มารดา
                     </div>
                     <div class="col-4">
-                        @((Model.people.pop.motherPersonalID > 0) ? Model.people.pop.motherPersonalID.ToString("0-0000-00000-00-0") : "")
+                        @((Model?.people?.pop?.motherPersonalID > 0) ? Model?.people?.pop?.motherPersonalID.ToString("0-0000-00000-00-0") : "")
                     </div>
                     <div class="col-2">
                         ชื่อ
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.motherName
+                        @Model?.people?.pop?.motherName
                     </div>
                     <div class="col-2">
                         สัญชาติ
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.motherNationalityDesc
+                        @Model?.people?.pop?.motherNationalityDesc
                     </div>
                 </div>
                 <div class="row">
@@ -908,9 +908,9 @@
                         <br />
                         <br />
                         <br />
-                        @($"({api.getUserLK().title}{api.getUserLK().fname} {api.getUserLK().mname} {api.getUserLK().lname})")
+                        @($"({api?.getUserLK()?.title}{api?.getUserLK()?.fname} {api?.getUserLK()?.mname} {api?.getUserLK()?.lname})")
                         <br />
-                        @($"{api.getUserLK().office}")
+                        @($"{api?.getUserLK()?.office}")
                         <br />
                         <span>สำนักงานตำรวจแห่งชาติ</span>
                     </div>
@@ -949,13 +949,13 @@
                         เลขประจำตัวประชาชน
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.pid.ToString("0-0000-00000-00-0")
+                        @Model?.people?.pop?.pid.ToString("0-0000-00000-00-0")
                     </div>
                     <div class="col-2 px-0">
                         เลขรหัสประจำบัาน
                     </div>
                     <div class="col-4">
-                        @Model.people.house.houseID.ToString("0000-000000-0")
+                        @Model?.people?.house?.houseID.ToString("0000-000000-0")
                     </div>
                 </div>
                 <div class="row">
@@ -963,19 +963,19 @@
                         ชื่อ
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.fullnameAndRank
+                        @Model?.people?.pop?.fullnameAndRank
                     </div>
                     <div class="col-1">
                         เพศ
                     </div>
                     <div class="col-1">
-                        @Model.people.pop.genderDesc
+                        @Model?.people?.pop?.genderDesc
                     </div>
                     <div class="col-1">
                         สัญชาติ
                     </div>
                     <div class="col-3">
-                        @Model.people.pop.nationalityDesc
+                        @Model?.people?.pop?.nationalityDesc
                     </div>
                 </div>
                 <div class="row">
@@ -983,12 +983,12 @@
                         เกิดเมื่อ
                     </div>
                     <div class="col-2">
-                        @Tools.getDateTH(Model.people.pop.dateOfBirth)
+                        @Tools.getDateTH(Model?.people?.pop?.dateOfBirth)
                     </div>
                     <div class="col-2 text-center">
                         อายุ
                         &nbsp;&nbsp;
-                        @Model.people.pop.age
+                        @Model?.people?.pop?.age
                         &nbsp;&nbsp;
                         ปี
                     </div>
@@ -996,7 +996,7 @@
                         สถานภาพ
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.ownerStatusDesc
+                        @Model?.people?.pop?.ownerStatusDesc
                     </div>
                 </div>
                 <div class="row">
@@ -1004,13 +1004,13 @@
                         เลขที่เอกสาร
                     </div>
                     <div class="col-4">
-                        @Model.people.card.documentNumber
+                        @Model?.people?.card?.documentNumber
                     </div>
                     <div class="col-2">
                         เบอร์โทรศัพท์
                     </div>
                     <div class="col-4">
-                        @Model.people.card.phoneNumber
+                        @Model?.people?.card?.phoneNumber
                     </div>
                 </div>
                 <div class="row">
@@ -1079,9 +1079,9 @@
                         <br />
                         <br />
                         <br />
-                        @($"({api.getUserLK().title}{api.getUserLK().fname} {api.getUserLK().mname} {api.getUserLK().lname})")
+                        @($"({api?.getUserLK()?.title}{api?.getUserLK()?.fname} {api?.getUserLK()?.mname} {api?.getUserLK()?.lname})")
                         <br />
-                        @($"{api.getUserLK().office}")
+                        @($"{api?.getUserLK()?.office}")
                         <br />
                         <span>สำนักงานตำรวจแห่งชาติ</span>
                     </div>
@@ -1170,7 +1170,7 @@
                                 <div class="col-2">
                                     อายุ
                                     &nbsp;&nbsp;
-                                    @Model.people.pop.age
+                                    @Model?.people?.pop?.age
                                     &nbsp;&nbsp;
                                     ปี
                                 </div>
