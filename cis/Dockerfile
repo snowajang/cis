@@ -1,21 +1,22 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-nanoserver-1809 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 EXPOSE 80
-
+ENV HTTP_PROXY=http://172.16.82.3:3128
+ENV HTTPS_PROXY=http://172.16.82.3:3128
 ENV ASPNETCORE_URLS=http://+:80
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0-nanoserver-1809 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG configuration=Release
 WORKDIR /src
 COPY ["cis/cis.csproj", "cis/"]
-RUN dotnet restore "cis\cis.csproj"
+RUN dotnet restore "cis/cis.csproj"
 COPY . .
 WORKDIR "/src/cis"
-RUN dotnet build "cis.csproj" -c $configuration -o /app/build
+RUN dotnet build "cis.csproj" -c ${configuration} -o /app/build
 
 FROM build AS publish
 ARG configuration=Release
-RUN dotnet publish "cis.csproj" -c $configuration -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "cis.csproj" -c ${configuration} -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app

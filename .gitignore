@@ -2,4 +2,4 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/cis/Views/User/Index.cshtml
+cis/obj/Debug/**
