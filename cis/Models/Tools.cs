@@ -186,9 +186,9 @@ namespace CISApps.Models
             return strout;
         }
 
-        public static async Task< List<SelectListItem> >getProvinceTH(string domains)
+        public static async Task< List<SelectListItem>? > getProvinceTH(string domains)
         {
-            var list = new List<SelectListItem>();
+            List<SelectListItem>? list = new List<SelectListItem>();
             Rest.Api api = new Rest.Api();
             api.setDomain(domains);
             try
@@ -226,7 +226,9 @@ namespace CISApps.Models
                 l.logtime = getTimeRow();
                 l.pid = api?.getUserLK()?.pid ?? 0L;
                 l.desc = desc;
-                var res = await api.POST("/api/log", l);
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                var res = await api?.POST("/api/log", l) ?? new();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
                 if ( res.IsSuccessStatusCode )
                 {
                     err = await res.getJsonObjectAsync<Error>();

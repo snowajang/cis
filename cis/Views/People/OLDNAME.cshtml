@@ -908,9 +908,9 @@
                         <br />
                         <br />
                         <br />
-                        @($"({api.getUserLK().title}{api.getUserLK().fname} {api.getUserLK().mname} {api.getUserLK().lname})")
+                        @($"({api?.getUserLK()?.title}{api?.getUserLK()?.fname} {api?.getUserLK()?.mname} {api?.getUserLK()?.lname})")
                         <br />
-                        @($"{api.getUserLK().office}")
+                        @($"{api?.getUserLK()?.office}")
                         <br />
                         <span>สำนักงานตำรวจแห่งชาติ</span>
                     </div>
@@ -1079,9 +1079,9 @@
                         <br />
                         <br />
                         <br />
-                        @($"({api.getUserLK().title}{api.getUserLK().fname} {api.getUserLK().mname} {api.getUserLK().lname})")
+                        @($"({api?.getUserLK()?.title}{api?.getUserLK()?.fname} {api?.getUserLK()?.mname} {api?.getUserLK()?.lname})")
                         <br />
-                        @($"{api.getUserLK().office}")
+                        @($"{api?.getUserLK()?.office}")
                         <br />
                         <span>สำนักงานตำรวจแห่งชาติ</span>
                     </div>
@@ -1092,7 +1092,7 @@
         {
             int i = 0;
             int pagevn = 1;
-            int totalPage = (int)( (Model?.people?.child?.totalChild / 5) + 1 );
+            int totalPage = ((Model?.people?.child?.totalChild / 5) + 1 ) ?? 0;
             while (Model?.people?.child?.totalChild > i)
             {
                 <div class="page-break">
@@ -1170,7 +1170,7 @@
                                 <div class="col-2">
                                     อายุ
                                     &nbsp;&nbsp;
-                                    @Model.people.pop.age
+                                    @Model?.people?.pop?.age
                                     &nbsp;&nbsp;
                                     ปี
                                 </div>
@@ -1178,13 +1178,13 @@
                                     สัญชาติ
                                 </div>
                                 <div class="col-3">
-                                    @c.nationalityDesc
+                                    @c?.nationalityDesc
                                 </div>
                                 <div class="col-2">
                                     สถานะบุคคล
                                 </div>
                                 <div class="col-4">
-                                    @c.statusOfPersonDesc
+                                    @c?.statusOfPersonDesc
                                 </div>
                             </div>
                             <br />

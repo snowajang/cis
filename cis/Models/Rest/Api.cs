@@ -11,15 +11,21 @@ namespace CISApps.Models.Rest
         public Privilate? privilate { get; set; }
 		public Emp? emp { get; set; }
 
-		public Uri _base = new Uri("http://api:3000/");
+		public Uri _base = new Uri("https://web-app.bora.dopa.go.th/meetrens");
+        public Api()
+        {
+        }
+        public Api(String _url)
+        {
+            _base = new Uri(_url);
+        }
 
         public Api(IConfiguration _config)
         {
             config = _config;
-            _base = new Uri(_config.GetValue<string>("baseaddress"));
+            _base = new Uri(_config.GetValue<string>("baseaddress") ?? "");
         }
-        public Api() { 
-        }
+
         public void setDomain(string domains)
         {
             _base = new Uri(domains);
@@ -148,5 +154,6 @@ namespace CISApps.Models.Rest
 		{
 			emp = null;
 		}
+
     }
 }

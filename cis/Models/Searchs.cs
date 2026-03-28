@@ -32,27 +32,7 @@ namespace CISApps.Models
 				this.people.cardImage = f["cardImage"].ToObjectJson<CardImage>();
 				this.people.cardDetail = f["cardDetail"].ToObjectJson<CardDetail>();
 				this.people.cardDetailImage = f["cardDetailImage"].ToObjectJson<CardImage>();
-				if (this.people.cardDetail!=null)
-				{
-					int vix = -1;
-					for (vix = 0; vix < this.people?.cardDetail?.cardbp?.Count; vix++) {
-						var bp1 = this.people.cardDetail.cardbp[vix];
-						if (bp1 != null && bp1.documentNumber == this.people?.card?.documentNumber)
-						{
-							bp1.card = this.people.card;
-							if (this.people?.cardDetailImage == null)
-							{
-                                bp1.cardImage = this.people?.cardImage ?? new();
-                            } else if (this.people?.cardDetailImage != null)
-							{
-								bp1.cardImage = this.people?.cardDetailImage ?? new();
-                            }
-							
-							break;
-                        }
-                    }
-                }
-                this.people.moveIn = f["moveIn"].ToObjectJson<MoveIn>();
+                this.people.moveIn = f["moveIn"].ToObjectJson<MoveIn>() ?? null;
 				this.people.moveOut = f["moveOut"].ToObjectJson<MoveOut>();
 				this.people.rename = f["rename"].ToObjectJson<Rename>();
 				this.people.marry = f["marry"].ToObjectJson<Marry>();
@@ -76,6 +56,7 @@ namespace CISApps.Models
                 this.people.aliencard = f["aliencard"].ToObjectJson<AlienCard>();
                 this.people.alienimage = f["alienimage"].ToObjectJson<AlienImage>();
                 this.people.dsi = f["dsi"].ToObjectJson<DsiService>();
+				
 				this.people.transport = new() { 
 					Property1 = f["transport"].ToObjectJson<List<Linkage.Transport.Class1>>() ?? new()
 				}; 
@@ -84,6 +65,29 @@ namespace CISApps.Models
                     Property1 = f["transportcard"].ToObjectJson<List<Linkage.Transport.Tcard>>() ?? new()
                 }; 
                 this.people.education = f["education"].ToObjectJson<Linkage.Education.EducationService>();
+
+                if (this.people.cardDetail != null)
+                {
+                    int vix = -1;
+                    for (vix = 0; vix < this.people?.cardDetail?.cardbp?.Count; vix++)
+                    {
+                        var bp1 = this.people.cardDetail.cardbp[vix];
+                        if (bp1 != null && bp1.documentNumber == this.people?.card?.documentNumber)
+                        {
+                            bp1.card = this.people.card;
+                            if (this.people?.cardDetailImage == null)
+                            {
+                                bp1.cardImage = this.people?.cardImage ?? new();
+                            }
+                            else if (this.people?.cardDetailImage != null)
+                            {
+                                bp1.cardImage = this.people?.cardDetailImage ?? new();
+                            }
+
+                            break;
+                        }
+                    }
+                }
             }
 			catch (Exception ex)
 			{
