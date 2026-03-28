@@ -17,6 +17,8 @@ build_property.SupportLocalizedComponentNames =
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
 build_property.MSBuildProjectDirectory = D:\source\cis\cis
 build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 8.0
+build_property.EnableCodeStyleSeverity = 
 
 [D:/source/cis/cis/Views/BorderPass/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQm9yZGVyUGFzc1xJbmRleC5jc2h0bWw=
