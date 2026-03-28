@@ -1,3 +1,4 @@
+using cis.Models.Rest;
 using CISApps.Models.Rest;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -10,16 +11,21 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Home/Index";        // เส้นทางหน้า Login
-        options.LogoutPath = "/Home/Logout";      // เส้นทางหน้า Logout
-        options.AccessDeniedPath = "/Home/Error"; // หน้า Access Denied
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // อายุ session
+        options.LoginPath = "/Home/Index";        // ๏ฟฝ๏ฟฝ้นทางหน๏ฟฝ๏ฟฝ Login
+        options.LogoutPath = "/Home/Logout";      // ๏ฟฝ๏ฟฝ้นทางหน๏ฟฝ๏ฟฝ Logout
+        options.AccessDeniedPath = "/Home/Error"; // หน๏ฟฝ๏ฟฝ Access Denied
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // ๏ฟฝ๏ฟฝ๏ฟฝ๏ฟฝ session
         options.SlidingExpiration = true;
     });
 
-// เพิ่ม Authorization
+// ๏ฟฝ๏ฟฝ๏ฟฝ๏ฟฝ Authorization
 builder.Services.AddAuthorization();
-
+builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<ApiService>(client =>
+{
+    client.BaseAddress = new Uri("https://web-app.bora.dopa.go.th/meetrens");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

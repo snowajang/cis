@@ -102,6 +102,78 @@ namespace cis.Controllers
                 throw;
             }
         }
+
+        
+        [HttpPost]
+        public async Task<IActionResult> Thaid(LoginThaiD login)
+        {
+            try
+            {
+                if (login == null)
+                {
+                    login = new LoginThaiD();
+                    login.error = "ไม่ได้รับการตอบกลับจากระบบ ThaID";
+                    return View(login);
+                }
+                // xติดต่อ lk2 
+                string token="";
+                try
+                {
+                    if (!string.IsNullOrEmpty(login.error))
+                    {
+                        return View(login);
+                    }
+                    long ipid = long.Parse(login.pid);
+                    var api = new Api("https://web-app.bora.dopa.go.th/meetrens");
+                    //api.setDomain("https://web-app.bora.dopa.go.th/meetrens");
+                    var response = await api.POST(
+                        "/api/center/login/confirm", 
+                        new { loginType = 2, officeID=333, accessToken = login.access_token.Trim(), personalID = ipid }
+                    );
+                    var data = await response.Content.ReadAsStringAsync();
+                    var json = data.ToObjectJson<ResponseLogin>();
+                    if (response.StatusCode != System.Net.HttpStatusCode.Created)
+                    {
+                        if (json?.errorNumber > 0)
+                        {
+                            login.error = json?.errorMessage ?? "";
+                        }
+                        else
+                        {
+                            login.error = "พบปัญหาเชื่อมต่อระบบ";
+                        }
+                        return View(login);
+                    }
+                    token = json?.token ?? "";
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "home-index");
+                    throw;
+                }
+                // login 
+                var identity = new ClaimsIdentity("Cookies", ClaimTypes.Name, ClaimTypes.Role);
+                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, login.name));
+                identity.AddClaim(new Claim(ClaimTypes.Name, login.pid));
+                identity.AddClaim(new Claim("lktoken", token));
+                var principal = new ClaimsPrincipal(identity);
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    principal,
+                    new AuthenticationProperties
+                    {
+                        IsPersistent = true,
+                        AllowRefresh = true,
+                        ExpiresUtc = DateTime.UtcNow.AddMinutes(20)
+                    });
+                return RedirectToAction("Index", "User");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "home-index");
+                throw;
+            }
+        }
         public IActionResult Privacy()
         {
             return View();

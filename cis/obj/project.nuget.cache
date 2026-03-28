@@ -1,8 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "+K2QKV/gtWQ=",
+  "dgSpecHash": "pImYLgXlSHs=",
   "success": true,
-  "projectFilePath": "D:\\work\\cis\\cis\\cis\\cis.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "D:\\source\\cis\\cis\\cis\\cis.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\M_Bora\\.nuget\\packages\\microsoft.netcore.app.ref\\8.0.21\\microsoft.netcore.app.ref.8.0.21.nupkg.sha512",
+    "C:\\Users\\M_Bora\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\8.0.21\\microsoft.windowsdesktop.app.ref.8.0.21.nupkg.sha512",
+    "C:\\Users\\M_Bora\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\8.0.21\\microsoft.aspnetcore.app.ref.8.0.21.nupkg.sha512",
+    "C:\\Users\\M_Bora\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\8.0.21\\microsoft.netcore.app.host.win-x64.8.0.21.nupkg.sha512"
+  ],
   "logs": []
 }
