@@ -5,6 +5,7 @@ using CISApps.Models.Linkage;
 using CISApps.Models.Linkage.Department;
 using CISApps.Models.Linkage.Nsho;
 using cis.Models.Rest;
+using System.Security.Claims;
 
 namespace cis.Controllers
 {
@@ -44,23 +45,56 @@ namespace cis.Controllers
                 s.setData(f);
 
                 var pidText = f["xyspid"].ToString();
-                if (!long.TryParse(pidText, out var pid) || pid <= 0)
+                if (!long.TryParse(pidText, out var pid) || pid != 13)
                 {
                     s.errorMessage = "เลขประจำตัวประชาชนไม่ถูกต้อง";
                     return View(s);
                 }
 
                 s.people ??= new People();
-
-                // API response shape:
-                // {
-                //   "data": [
-                //     { "serviceID": 1, "responseData": { ... } },
-                //     ...
-                //   ],
-                //   "executeTimeMs": 900
-                // }
-                var response = await api.GetDataAsync<AggregateApiResponse>($"/api/people/pid/{pid}");
+                var data = new  
+                {
+                    jobID = "f46d6089-723c-441c-86f3-92a4de07acef",
+                    data= new [] {
+                        new {
+                            serviceID = 1,
+                            query= new {
+                                personalID = pidText
+                            }
+                        },
+                        new {
+                            serviceID = 9,
+                            query = new {
+                                personalID = pidText
+                            }
+                        },
+                        new {
+                            serviceID = 21,
+                            query = new {
+                                personalID = pidText
+                            }
+                        },
+                        new {
+                            serviceID = 38,
+                            query = new {
+                                personalID = pidText
+                            }
+                        },
+                        new {
+                            serviceID = 98,
+                            query = new {
+                                personalID = pidText
+                            }
+                        }
+                    }                    
+                };
+                var lkToken = User.FindFirst("lktoken")?.Value;
+                var response = await api.PostDataAsync<AggregateApiResponse>($"/api/center/request/", data, lkToken );
+                if (api.statusCode != 200 || api.statusCode != 404)
+                {
+                    s.errorMessage = $"API error: {api.statusCode} {response?.errorMessage ?? "Unknown error"}";
+                    return View(s);
+                }
                 if (response?.data == null || response.data.Count == 0)
                 {
                     s.errorMessage = string.IsNullOrWhiteSpace(s.errorMessage)
@@ -82,6 +116,12 @@ namespace cis.Controllers
                         case 38:
                             s.people.house = DeserializeResponseData<House>(item.responseData) ?? s.people.house;
                             break;
+                        case 9:
+                            s.people.child = DeserializeResponseData<Child>(item.responseData) ?? s.people.child;
+                            break;
+                        case 21:
+                            s.people.cardImage = DeserializeResponseData<CardImage>(item.responseData) ?? s.people.cardImage;
+                            break;
                         case 98:
                             s.people.nsho = DeserializeResponseData<NshoService>(item.responseData) ?? s.people.nsho;
                             break;
@@ -95,6 +135,7 @@ namespace cis.Controllers
             {
                 _logger.LogError(ex, "PeopleController.PID failed");
                 s.errorMessage = ex.Message;
+                return View(s);
             }
 
             return View(s);

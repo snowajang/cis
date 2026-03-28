@@ -111,6 +111,7 @@ namespace cis.Controllers
             {
                 if (login == null)
                 {
+                    Console.WriteLine("Login is null");
                     login = new LoginThaiD();
                     login.error = "ไม่ได้รับการตอบกลับจากระบบ ThaID";
                     return View(login);

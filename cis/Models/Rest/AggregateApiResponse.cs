@@ -9,6 +9,8 @@ namespace cis.Models.Rest
 {
     public class AggregateApiResponse
     {
+        public string? errorMessage { get; set; }
+        public int errorNumber { get; set; }
         public List<AggregateApiItem> data { get; set; } = new();
         public int executeTimeMs { get; set; }
     }

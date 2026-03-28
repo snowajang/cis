@@ -11,16 +11,31 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Home/Index";        // ��鹷ҧ˹�� Login
-        options.LogoutPath = "/Home/Logout";      // ��鹷ҧ˹�� Logout
-        options.AccessDeniedPath = "/Home/Error"; // ˹�� Access Denied
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // ���� session
-        options.SlidingExpiration = true;
-    });
+        options.LoginPath = "/Home/Index";
+        options.LogoutPath = "/Home/Logout";
+        options.AccessDeniedPath = "/Home/Error";
 
-// ���� Authorization
+        options.Cookie.Name = "cis_auth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
+        options.SlidingExpiration = false;
+    }
+);
+// builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+//     .AddCookie(options =>
+//     {
+//         options.LoginPath = "/Home/Index";        // ��鹷ҧ˹�� Login
+//         options.LogoutPath = "/Home/Logout";      // ��鹷ҧ˹�� Logout
+//         options.AccessDeniedPath = "/Home/Error"; // ˹�� Access Denied
+//         options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // ���� session
+//         options.SlidingExpiration = true;
+//     });
+
+// // ���� Authorization
 builder.Services.AddAuthorization();
-builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<ApiService>(client =>
 {
     client.BaseAddress = new Uri("https://web-app.bora.dopa.go.th/meetrens");
