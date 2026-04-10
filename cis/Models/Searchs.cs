@@ -49,6 +49,7 @@ namespace CISApps.Models
 				this.people.waterregion = f["waterregion"].ToObjectJson<WaterRegionService>();
 				this.people.nsho = f["nsho"].ToObjectJson<NshoService>();
 				this.people.guncard = f["guncard"].ToObjectJson<GunCardService>();
+				this.people.gun = f["gun"].ToObjectJson<GunService>();
 				this.people.insurance = f["insurance"].ToObjectJson<InsuranceService>();
                 this.people.housedetail = f["housedetail"].ToObjectJson<HouseDetail>();
                 this.people.popinhouse = f["popinhouse"].ToObjectJson<PopInHouse>();

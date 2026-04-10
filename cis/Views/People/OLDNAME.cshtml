@@ -3,7 +3,8 @@
 @{
     ViewData["Title"] = "PeoplePID";
     string d_none = "";
-    if (string.IsNullOrEmpty(Model?.errorMessage ?? "")) d_none = "d-none";
+    
+    
     string cardprev = ViewData["cardprev"]?.ToString() ?? "";
     string cardnext = ViewData["cardnext"]?.ToString() ?? "";
     int cardindex = int.Parse(ViewData["cardindex"]?.ToString() ?? "0");
@@ -19,6 +20,7 @@
     int oldpopnext = int.Parse(ViewData["oldpopnext"]?.ToString() ?? "0");
     string btnout = "btn btn-outline-primary mt-1";
 }
+@if (string.IsNullOrEmpty(Model?.errorMessage ?? "")) d_none = "d-none";
 
 <div class="h1 d-flex justify-content-between">
     <span>ตรวจสอบรายการบุคคล</span>
@@ -47,26 +49,27 @@
                 </select>
             </div>
             <div class="col">
-                <div id="a1">
-                    <form asp-action="Index" asp-controller="Pop" method="post">
-                        <input id="spid" type="text" class="form-control d-inline" value="@(ViewData["xyspid"]?.ToString() ?? "")" style="width:200px;" />
-                        <button id="ibtnpid" type="button" onclick="runPopPid()" class="btn btn-primary">ค้นหา</button>
+                @* <div id="a1">
+                    <form asp-action="PID" asp-controller="People" method="post">
+                        <input id="spid" name="spid" type="text" class="form-control d-inline" value="@(ViewData["spid"]?.ToString() ?? "")" style="width:200px;" />
+                        <button id="ibtnpid" type="submit" class="btn btn-primary">ค้นหา</button>
                     </form>
                 </div>
                 <div id="a2" class="d-none">
-                    <form asp-action="Index" asp-controller="Pop" method="post">
-                        <input id="nFname" type="text" class="form-control d-inline" value="@ViewData["xyfname"]" placeholder="ชื่อตัว" style="width:200px;" />
-                        <input id="nMname" type="text" class="form-control d-inline" value="@ViewData["xymname"]" placeholder="ชื่อรอง" style="width:200px;" />
-                        <input id="nLname" type="text" class="form-control d-inline" value="@ViewData["xylname"]" placeholder="นามสกุล" style="width:200px;" />
-                        <input id="nameindex" name="nameindex" type="hidden" value="@(ViewBag.popindex)" />
-                        <button id="ibtnname" type="button" onclick="runPopName()" class="btn btn-primary">ค้นหา</button>
+                    <form asp-action="NAME" asp-controller="People" method="post">
+                        <input id="nFname" name="fname" type="text" class="form-control d-inline" value="@ViewData["fname"]" placeholder="ชื่อตัว" style="width:200px;" />
+                        <input id="nMname" name="mname" type="text" class="form-control d-inline" value="@ViewData["mname"]" placeholder="ชื่อรอง" style="width:200px;" />
+                        <input id="nLname" name="lname" type="text" class="form-control d-inline" value="@ViewData["lname"]" placeholder="นามสกุล" style="width:200px;" />
+                        <input id="nameindex" name="nameindex" type="hidden" value="@(ViewData["nameindex"])" />
+                        <button id="ibtnname" type="submit" class="btn btn-primary">ค้นหา</button>
                     </form>
-                </div>
+                </div> *@
                 <div id="a3" class="d-none">
-                    <form asp-action="Index" asp-controller="Pop" method="post">
-                        <input id="oFname" type="text" class="form-control d-inline" value="@ViewData["xyofname"]" placeholder="ชื่อตัว (เดิม)" style="width:200px;" />
-                        <input id="oLname" type="text" class="form-control d-inline" value="@ViewData["xyolname"]" placeholder="นามสกุล (เดิม)" style="width:200px;" />
-                        <button id="ibtnoldname" type="button" onclick="runPopOldName(1)" class="btn btn-primary">ค้นหา</button>
+                    <form asp-action="OLDNAME" asp-controller="People" method="post">
+                        <input id="oFname" name="fname" type="text" class="form-control d-inline" value="@ViewData["fname"]" placeholder="ชื่อตัว (เดิม)" style="width:200px;" />
+                        <input id="oLname" name="lname" type="text" class="form-control d-inline" value="@ViewData["lname"]" placeholder="นามสกุล (เดิม)" style="width:200px;" />
+                        <input id="nameindex" name="nameindex" type="hidden" value="@(ViewData["nameindex"])" />
+                        <button id="ibtnoldname" type="submit" class="btn btn-primary">ค้นหา</button>
                     </form>
                 </div>
 
@@ -78,14 +81,20 @@
     </div>
     <div class="card-body" id="ckan"> 
         <div id="errorinfo" class="text-center bg-danger text-white rounded @d_none">
-            @ViewData["error"]
+            @Model?.errorMessage
         </div>
         <div class="h4 d-flex justify-content-between">
             <span class="col">
                 ข้อมูลบุคคล
             </span>
+            <form id="formname" method="post" class="d-none">
             @if (popindex > 0)
             {
+                <input id="nFname" name="fname" type="text" class="form-control d-inline" value="@ViewData["fname"]" placeholder="ชื่อตัว" style="width:200px;" />
+                <input id="nMname" name="mname" type="text" class="form-control d-inline" value="@ViewData["mname"]" placeholder="ชื่อรอง" style="width:200px;" />
+                <input id="nLname" name="lname" type="text" class="form-control d-inline" value="@ViewData["lname"]" placeholder="นามสกุล" style="width:200px;" />
+                <input id="nameindex" name="nameindex" type="hidden" value="" />
+                
                 <span>
                     <button class="btn @((popprev == 0) ? "btn-white" : "btn-success")" onclick="loadnamepop(@popprev)" @((popprev == 0) ? "disabled" : "")>ข้อมูลก่อนหน้า</button>
                     <span>
@@ -96,14 +105,14 @@
             } else if (oldpopindex > 0)
             {
                 <span>
-                    <button class="btn @((oldpopprev == 0) ? "btn-white" : "btn-success")" onclick="runPopOldName(@oldpopprev)" @((oldpopprev == 0) ? "disabled" : "")>ข้อมูลก่อนหน้า</button>
+                    <button class="btn @((oldpopprev == 0) ? "btn-white" : "btn-success")" onclick="loadnamepop(@oldpopprev)" @((oldpopprev == 0) ? "disabled" : "")>ข้อมูลก่อนหน้า</button>
                     <span>
                         @($"{oldpopindex}/{oldpoptotal}")
                     </span>
-                    <button class="btn btn-success" onclick="runPopOldName(@oldpopnext)" @((oldpopnext == 0) ? "disabled" : "")>ข้อมูลต่อไป</button>
-                </span>
-                
+                    <button class="btn btn-success" onclick="loadnamepop(@oldpopnext)" @((oldpopnext == 0) ? "disabled" : "")>ข้อมูลต่อไป</button>
+                </span>                
             }
+            </form>
         </div>
 
         <div class="h4">
@@ -302,6 +311,8 @@
                     </div>                    
                 </div>
             </div>
+        </div>
+        <div class="row px-2 mt-4">
             <div class="col mx-2 card">
                 <div class="card-body">
                     <div class="h4">
@@ -312,45 +323,54 @@
                         int childi = 0;
                         string ch_id = $"child{childi}";
                     }
-                    @do{
-                        var c = Model?.people?.child?.child[childi] ?? new();
-                        <div class="row h6">
-                            <span class="col-11">เลขประจำตัวประชาชน</span>
-                            <span class="col-11 text-info pid" onclick="searchWithChildID(@childi)">
-                                <input id="@ch_id" type="hidden" value="@Model?.people?.pop?.motherPersonalID" />
-                                @(Tools.GenID(c?.personalID))
-                                @if (@c?.personalID > 0)
-                                {
-                                    <button class="@btnout" onclick="postpagepop('@c?.personalID')">ดู</button>
-                                }
-                            </span>
-                        </div>
+                    @if (Model?.people?.child?.totalChild == 0)
+                    {
                         <div class="row h5">
-                            <span class="col-3 px-0 text-end">ชื่อ สกุล</span>
-                            <span class="col-9 text-info">
-                                @((!string.IsNullOrEmpty(c?.titleDesc)) ? $"{c?.titleDesc}{c?.firstName} {c?.middleName} {c?.lastName}" : "-")
-                            </span>
+                            <span class="col-12 text-center"> - ไม่มีข้อมูลบุตร - </span>
                         </div>
-                        <div class="row h5">
-                            <span class="col-3 px-0 text-end">สัญชาติ</span>
-                            <span class="col-8 text-info">
-                                @((!string.IsNullOrEmpty(c?.nationalityDesc)) ? $"{c?.nationalityDesc}" : "-")
-                            </span>
-                        </div>
-                        <div class="row h5">
-                            <span class="col-3 px-0 text-end">อายุ</span>
-                            <span class="col-8 text-info">
-                                @((c?.age>0) ? $"{c?.age}" : "-")
-                            </span>
-                        </div>
-                        <div class="row h5">
-                            <span class="col-3 px-0 text-end">สถานะ</span>
-                            <span class="col-8 text-info">
-                                @((!string.IsNullOrEmpty(c?.statusOfPersonDesc)) ? $"{c?.statusOfPersonDesc}" : "-")
-                            </span>
-                        </div>
-                        childi++;
-                    } while( childi < Model?.people?.child?.totalChild);
+                    } else {
+                        @do{
+                            var c = Model?.people?.child?.child[childi] ?? null;
+                            @if (c == null) { childi++; continue; }
+                            <div class="row h6">
+                                <span class="col-12">เลขประจำตัวประชาชน</span>
+                                <span class="col-12 text-info pid" onclick="searchWithChildID(@childi)">
+                                    <input id="@ch_id" type="hidden" value="@Model?.people?.pop?.motherPersonalID" />
+                                    @(Tools.GenID(c?.personalID))
+                                    @if (@c?.personalID > 0)
+                                    {
+                                        <button class="@btnout" onclick="postpagepop('@c?.personalID')">ดู</button>
+                                    }
+                                </span>
+                            </div>
+                            <div class="row h5">
+                                <span class="col-3 px-0 text-end">ชื่อ สกุล</span>
+                                <span class="col-9 text-info">
+                                    @((!string.IsNullOrEmpty(c?.titleDesc)) ? $"{c?.titleDesc}{c?.firstName} {c?.middleName} {c?.lastName}" : "-")
+                                </span>
+                            </div>
+                            <div class="row h5">
+                                <span class="col-3 px-0 text-end">สัญชาติ</span>
+                                <span class="col-8 text-info">
+                                    @((!string.IsNullOrEmpty(c?.nationalityDesc)) ? $"{c?.nationalityDesc}" : "-")
+                                </span>
+                            </div>
+                            <div class="row h5">
+                                <span class="col-3 px-0 text-end">อายุ</span>
+                                <span class="col-8 text-info">
+                                    @((c?.age>0) ? $"{c?.age}" : "-")
+                                </span>
+                            </div>
+                            <div class="row h5">
+                                <span class="col-3 px-0 text-end">สถานะ</span>
+                                <span class="col-8 text-info">
+                                    @((!string.IsNullOrEmpty(c?.statusOfPersonDesc)) ? $"{c?.statusOfPersonDesc}" : "-")
+                                </span>
+                            </div>
+                            childi++;
+                        } while( childi < Model?.people?.child?.totalChild);
+                    }
+                    
                 </div>
             </div>
         </div>
@@ -763,13 +783,13 @@
                         เลขประจำตัวประชาชน
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.pid.ToString("0-0000-00000-00-0")
+                        @Model?.people?.pop?.pid.ToString("0-0000-00000-00-0")
                     </div>
                     <div class="col-2 px-0">
                         เลขรหัสประจำบัาน
                     </div>
                     <div class="col-4">
-                        @Model.people.house.houseID.ToString("0000-000000-0")
+                        @Model?.people?.house?.houseID.ToString("0000-000000-0")
                     </div>
                 </div>
                 <div class="row">
@@ -777,19 +797,19 @@
                         ชื่อ
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.fullnameAndRank
+                        @Model?.people?.pop?.fullnameAndRank
                     </div>
                     <div class="col-1">
                         เพศ
                     </div>
                     <div class="col-1">
-                        @Model.people.pop.genderDesc
+                        @Model?.people?.pop?.genderDesc
                     </div>
                     <div class="col-1">
                         สัญชาติ
                     </div>
                     <div class="col-3">
-                        @Model.people.pop.nationalityDesc
+                        @Model?.people?.pop?.nationalityDesc
                     </div>
                 </div>
                 <div class="row">
@@ -797,12 +817,12 @@
                         เกิดเมื่อ
                     </div>
                     <div class="col-2">
-                        @Tools.getDateTH(Model.people.pop.dateOfBirth)
+                        @Tools.getDateTH(Model?.people?.pop?.dateOfBirth)
                     </div>
                     <div class="col-2 text-center">
                         อายุ
                         &nbsp;&nbsp;
-                        @Model.people.pop.age
+                        @Model?.people?.pop?.age
                         &nbsp;&nbsp;
                         ปี
                     </div>
@@ -810,7 +830,7 @@
                         สถานภาพ
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.ownerStatusDesc
+                        @Model?.people?.pop?.ownerStatusDesc
                     </div>
                 </div>
                 <div class="row">
@@ -818,19 +838,19 @@
                         บิดา
                     </div>
                     <div class="col-4">
-                        @((Model.people.pop.fatherPersonalID > 0) ? Model.people.pop.fatherPersonalID.ToString("0-0000-00000-00-0") : "")
+                        @((Model?.people?.pop?.fatherPersonalID > 0) ? Model?.people?.pop?.fatherPersonalID.ToString("0-0000-00000-00-0") : "")
                     </div>
                     <div class="col-2">
                         ชื่อ
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.fatherName
+                        @Model?.people?.pop?.fatherName
                     </div>
                     <div class="col-2">
                         สัญชาติ
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.fatherNationalityDesc
+                        @Model?.people?.pop?.fatherNationalityDesc
                     </div>
                 </div>
                 <div class="row">
@@ -838,19 +858,19 @@
                         มารดา
                     </div>
                     <div class="col-4">
-                        @((Model.people.pop.motherPersonalID > 0) ? Model.people.pop.motherPersonalID.ToString("0-0000-00000-00-0") : "")
+                        @((Model?.people?.pop?.motherPersonalID > 0) ? Model?.people?.pop?.motherPersonalID.ToString("0-0000-00000-00-0") : "")
                     </div>
                     <div class="col-2">
                         ชื่อ
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.motherName
+                        @Model?.people?.pop?.motherName
                     </div>
                     <div class="col-2">
                         สัญชาติ
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.motherNationalityDesc
+                        @Model?.people?.pop?.motherNationalityDesc
                     </div>
                 </div>
                 <div class="row">
@@ -949,13 +969,13 @@
                         เลขประจำตัวประชาชน
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.pid.ToString("0-0000-00000-00-0")
+                        @Model?.people?.pop?.pid.ToString("0-0000-00000-00-0")
                     </div>
                     <div class="col-2 px-0">
                         เลขรหัสประจำบัาน
                     </div>
                     <div class="col-4">
-                        @Model.people.house.houseID.ToString("0000-000000-0")
+                        @Model?.people?.house?.houseID.ToString("0000-000000-0")
                     </div>
                 </div>
                 <div class="row">
@@ -963,19 +983,19 @@
                         ชื่อ
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.fullnameAndRank
+                        @Model?.people?.pop?.fullnameAndRank
                     </div>
                     <div class="col-1">
                         เพศ
                     </div>
                     <div class="col-1">
-                        @Model.people.pop.genderDesc
+                        @Model?.people?.pop?.genderDesc
                     </div>
                     <div class="col-1">
                         สัญชาติ
                     </div>
                     <div class="col-3">
-                        @Model.people.pop.nationalityDesc
+                        @Model?.people?.pop?.nationalityDesc
                     </div>
                 </div>
                 <div class="row">
@@ -983,12 +1003,12 @@
                         เกิดเมื่อ
                     </div>
                     <div class="col-2">
-                        @Tools.getDateTH(Model.people.pop.dateOfBirth)
+                        @Tools.getDateTH(Model?.people?.pop?.dateOfBirth)
                     </div>
                     <div class="col-2 text-center">
                         อายุ
                         &nbsp;&nbsp;
-                        @Model.people.pop.age
+                        @Model?.people?.pop?.age
                         &nbsp;&nbsp;
                         ปี
                     </div>
@@ -996,7 +1016,7 @@
                         สถานภาพ
                     </div>
                     <div class="col-4">
-                        @Model.people.pop.ownerStatusDesc
+                        @Model?.people?.pop?.ownerStatusDesc
                     </div>
                 </div>
                 <div class="row">
@@ -1004,13 +1024,13 @@
                         เลขที่เอกสาร
                     </div>
                     <div class="col-4">
-                        @Model.people.card.documentNumber
+                        @Model?.people?.card?.documentNumber
                     </div>
                     <div class="col-2">
                         เบอร์โทรศัพท์
                     </div>
                     <div class="col-4">
-                        @Model.people.card.phoneNumber
+                        @Model?.people?.card?.phoneNumber
                     </div>
                 </div>
                 <div class="row">
@@ -1092,7 +1112,7 @@
         {
             int i = 0;
             int pagevn = 1;
-            int totalPage = ((Model?.people?.child?.totalChild / 5) + 1 ) ?? 0;
+            int totalPage = ( (Model?.people?.child?.totalChild / 5) + 1 ) ?? 0;
             while (Model?.people?.child?.totalChild > i)
             {
                 <div class="page-break">
@@ -1170,7 +1190,7 @@
                                 <div class="col-2">
                                     อายุ
                                     &nbsp;&nbsp;
-                                    @Model?.people?.pop?.age
+                                    @c?.age
                                     &nbsp;&nbsp;
                                     ปี
                                 </div>

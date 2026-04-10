@@ -1,19 +1,33 @@
-﻿@model CISApps.Models.Searchs
+@model CISApps.Models.Searchs
 
 @{
     ViewData["Title"] = "Gun";
     string d_none = "";
     if (string.IsNullOrEmpty(ViewData["error"]?.ToString() ?? "")) d_none = "d-none";
+    var isGunNumberMode = string.Equals(ViewData["mode"]?.ToString(), "gun-number", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(ViewContext.RouteData.Values["action"]?.ToString(), "GUN", StringComparison.OrdinalIgnoreCase);
+    var pageTitle = isGunNumberMode ? "ข้อมูลใบอนุญาติ ป.4 (หมายเลขอาวุธ)" : "ข้อมูลอาวุธปืน";
 }
 
 <div class="h1">
-    ข้อมูลอาวุธปืน
+    @pageTitle
 </div>
 
 <div class="card">
     <div class="card-header bg-light">
-        <label class="form-label">เลขประจำตัวประชาชน</label>
-        <input class="col-4 form-control" name="spid" value="@(Model?.people?.pop?.pid.ToString() ?? ((api.pid_test==0L)?"":api.pid_test.ToString()))" />
+        <form method="post">
+            <span class="form-label">ค้นหาด้วยหมายเลขอาวุธปืน</span>   
+            <span class="col-3">
+                <input 
+                    name="spid" 
+                    value="@(ViewData["spid"])" 
+                    class="pid form-control d-inline-block" 
+                    style="width: 25%;" />
+            </span>
+            <span>
+                <button type="submit" class="btn btn-primary">ค้นหา</button>
+            </span>
+        </form>
     </div>
     <div class="card-body" id="ckan">
         <div id="errorinfo" class="text-center bg-danger text-white rounded @d_none">
@@ -21,3 +35,23 @@
         </div>
     </div>
 </div>
+
+<script>
+    async function searchGunNumber() {
+        try {
+            var spid = document.getElementById('spid').value;
+            spid = spid.replace(/-/g, '').trim();
+            while (spid.length < 13) {
+                spid = '0' + spid;
+            }
+            if (await runGunBp4(spid)) {
+                document.getElementById('xyspid').value = spid;
+                document.getElementById('flk').action = '/Gun/GUN';
+                document.getElementById('flk').submit();
+            }
+        } catch (error) {
+            document.getElementById('errorinfo').innerHTML = `พบปัญหา ${error}`;
+            document.getElementById('errorinfo').classList.remove('d-none');
+        }
+    }
+</script>

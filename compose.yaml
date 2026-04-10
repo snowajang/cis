@@ -1,10 +1,15 @@
 # Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP.NET Core service.
-
+name: cis
 services:
-  cis:
+  app:
     image: cis
     build:
       context: .
       dockerfile: cis/Dockerfile
     ports:
-      - 80:80
+      - 3000:80
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "50"

@@ -15,11 +15,6 @@ D:\source\cis\cis\obj\Debug\net8.0\cis.RazorAssemblyInfo.cache
 D:\source\cis\cis\obj\Debug\net8.0\cis.RazorAssemblyInfo.cs
 D:\source\cis\cis\obj\Debug\net8.0\staticwebassets.build.json
 D:\source\cis\cis\obj\Debug\net8.0\staticwebassets.development.json
-D:\source\cis\cis\obj\Debug\net8.0\staticwebassets\msbuild.cis.Microsoft.AspNetCore.StaticWebAssets.props
-D:\source\cis\cis\obj\Debug\net8.0\staticwebassets\msbuild.build.cis.props
-D:\source\cis\cis\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.cis.props
-D:\source\cis\cis\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.cis.props
-D:\source\cis\cis\obj\Debug\net8.0\staticwebassets.pack.json
 D:\source\cis\cis\obj\Debug\net8.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
 D:\source\cis\cis\obj\Debug\net8.0\scopedcss\bundle\cis.styles.css
 D:\source\cis\cis\obj\Debug\net8.0\scopedcss\projectbundle\cis.bundle.scp.css
@@ -62,3 +57,11 @@ D:\work\cis\cis\cis\obj\Debug\net8.0\refint\cis.dll
 D:\work\cis\cis\cis\obj\Debug\net8.0\cis.pdb
 D:\work\cis\cis\cis\obj\Debug\net8.0\cis.genruntimeconfig.cache
 D:\work\cis\cis\cis\obj\Debug\net8.0\ref\cis.dll
+D:\source\cis\cis\bin\Debug\net8.0\cis.staticwebassets.endpoints.json
+D:\source\cis\cis\obj\Debug\net8.0\rpswa.dswa.cache.json
+D:\source\cis\cis\obj\Debug\net8.0\cis.sourcelink.json
+D:\source\cis\cis\obj\Debug\net8.0\rjimswa.dswa.cache.json
+D:\source\cis\cis\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
+D:\source\cis\cis\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
+D:\source\cis\cis\obj\Debug\net8.0\staticwebassets.build.json.cache
+D:\source\cis\cis\obj\Debug\net8.0\staticwebassets.build.endpoints.json

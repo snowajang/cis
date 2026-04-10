@@ -1,7 +1,7 @@
 # Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP.NET Core service.
-
+name: cis
 services:
-  cis:
+  app:
     image: cis
     build:
       context: .
@@ -9,8 +9,11 @@ services:
       args:
         - configuration=Debug
     ports:
-      - 80:80
+      - 3000:80
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-    volumes:
-      - ~/.vsdbg:c:\remote_debugger:rw
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "50"

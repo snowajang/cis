@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using CISApps.Models;
 using CISApps.Models.Linkage;
@@ -6,18 +6,15 @@ using CISApps.Models.Linkage.Department;
 using CISApps.Models.Linkage.Nsho;
 using cis.Models.Rest;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace cis.Controllers
 {
+    [Authorize]
     public class PeopleController : Controller
     {
         private readonly ILogger<PeopleController> _logger;
         private readonly ApiService api;
-        private static readonly JsonSerializerOptions JsonOptions = new()
-        {
-            PropertyNameCaseInsensitive = true
-        };
-
         public PeopleController(ILogger<PeopleController> logger, ApiService apiService)
         {
             _logger = logger;
@@ -37,21 +34,31 @@ namespace cis.Controllers
         [HttpPost]
         public async Task<IActionResult> PID(IFormCollection f)
         {
+            if (f == null || !f.ContainsKey("spid"))
+            {
+                var sm = new Searchs();
+                sm.errorMessage = "กรุณากรอกเลขประจำตัวประชาชน";
+                return View(sm);
+            }
             var s = new Searchs();
             s.errorMessage = f["error"].ToString() ?? "";
-
+            _logger.LogInformation("Received PID search request with data: {error} {pid}", f["error"].ToString(), f["spid"].ToString());
             try
             {
-                s.setData(f);
+                // s.setData(f);
 
-                var pidText = f["xyspid"].ToString();
-                if (!long.TryParse(pidText, out var pid) || pid != 13)
+                String pidText = f["spid"].ToString();
+                long pid = 0L;
+                if (!long.TryParse(pidText, out pid) || pidText.Length != 13)
                 {
                     s.errorMessage = "เลขประจำตัวประชาชนไม่ถูกต้อง";
                     return View(s);
                 }
-
-                s.people ??= new People();
+                
+                // _logger.LogInformation("Initiating API request for PID: {PID}", pidText);
+                ViewData["spid"] = pidText;
+                s.people = new People();
+                // _logger.LogInformation("Sending API request {people}", s.people);
                 var data = new  
                 {
                     jobID = "f46d6089-723c-441c-86f3-92a4de07acef",
@@ -69,6 +76,12 @@ namespace cis.Controllers
                             }
                         },
                         new {
+                            serviceID = 12,
+                            query = new {
+                                personalID = pidText
+                            }
+                        },
+                        new {
                             serviceID = 21,
                             query = new {
                                 personalID = pidText
@@ -79,22 +92,28 @@ namespace cis.Controllers
                             query = new {
                                 personalID = pidText
                             }
-                        },
-                        new {
-                            serviceID = 98,
-                            query = new {
-                                personalID = pidText
-                            }
                         }
                     }                    
                 };
-                var lkToken = User.FindFirst("lktoken")?.Value;
+                
+                // _logger.LogInformation("Sending API request {data}", data);
+                var lkToken = User.FindFirst("lktoken")?.Value ?? null;
+                // _logger.LogInformation("Retrieved token from user claims: {token}", lkToken);
+                if (string.IsNullOrWhiteSpace(lkToken))
+                {
+                    s.errorMessage = "ไม่พบ token สำหรับเรียกใช้งานระบบ กรุณาเข้าสู่ระบบใหม่";
+                    return View(s);
+                }
+                var path = "/api/center/request/";
+                // _logger.LogInformation("Sending API request {path} {data} {token}", path, data, lkToken);
                 var response = await api.PostDataAsync<AggregateApiResponse>($"/api/center/request/", data, lkToken );
-                if (api.statusCode != 200 || api.statusCode != 404)
+                _logger.LogInformation("API response received with status code: {statusCode}", api.statusCode);
+                if (api.statusCode != 200 && api.statusCode != 404)
                 {
                     s.errorMessage = $"API error: {api.statusCode} {response?.errorMessage ?? "Unknown error"}";
                     return View(s);
                 }
+                _logger.LogInformation("API response received with data: {response}", response);
                 if (response?.data == null || response.data.Count == 0)
                 {
                     s.errorMessage = string.IsNullOrWhiteSpace(s.errorMessage)
@@ -103,6 +122,7 @@ namespace cis.Controllers
                     return View(s);
                 }
 
+                _logger.LogInformation("API response received with  time: {time}", response.executeTimeMs);
                 foreach (var item in response.data)
                 {
                     if (item.responseData.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
@@ -111,19 +131,19 @@ namespace cis.Controllers
                     switch (item.serviceID)
                     {
                         case 1:
-                            s.people.pop = DeserializeResponseData<Pop>(item.responseData) ?? s.people.pop;
+                            s.people.pop = AggregateResponseHelper.DeserializeResponseData<Pop>(item.responseData) ?? s.people.pop;
                             break;
                         case 38:
-                            s.people.house = DeserializeResponseData<House>(item.responseData) ?? s.people.house;
+                            s.people.house = AggregateResponseHelper.DeserializeResponseData<House>(item.responseData) ?? s.people.house;
                             break;
                         case 9:
-                            s.people.child = DeserializeResponseData<Child>(item.responseData) ?? s.people.child;
+                            s.people.rename = AggregateResponseHelper.DeserializeResponseData<Rename>(item.responseData) ?? s.people.rename;
+                            break;
+                        case 12:
+                            s.people.child = AggregateResponseHelper.DeserializeResponseData<Child>(item.responseData) ?? s.people.child;
                             break;
                         case 21:
-                            s.people.cardImage = DeserializeResponseData<CardImage>(item.responseData) ?? s.people.cardImage;
-                            break;
-                        case 98:
-                            s.people.nsho = DeserializeResponseData<NshoService>(item.responseData) ?? s.people.nsho;
+                            s.people.cardImage = AggregateResponseHelper.DeserializeResponseData<CardImage>(item.responseData) ?? s.people.cardImage;
                             break;
                         default:
                             MapByPayloadShape(item.responseData, s.people);
@@ -147,25 +167,25 @@ namespace cis.Controllers
             {
                 if (people.pop == null && HasAllProperties(responseData, "fullnameAndRank", "dateOfBirth", "statusOfPersonDesc"))
                 {
-                    people.pop = DeserializeResponseData<Pop>(responseData);
+                    people.pop = AggregateResponseHelper.DeserializeResponseData<Pop>(responseData);
                     return;
                 }
 
                 if (people.house == null && HasAllProperties(responseData, "houseID", "houseNo", "provinceDesc", "districtDesc"))
                 {
-                    people.house = DeserializeResponseData<House>(responseData);
+                    people.house = AggregateResponseHelper.DeserializeResponseData<House>(responseData);
                     return;
                 }
 
                 if (people.child == null && (HasProperty(responseData, "child") || HasProperty(responseData, "totalChild")))
                 {
-                    people.child = DeserializeResponseData<Child>(responseData);
+                    people.child = AggregateResponseHelper.DeserializeResponseData<Child>(responseData);
                     return;
                 }
 
                 if (people.nsho == null && HasAllProperties(responseData, "MAININSCL", "MAININSCL_NAME", "PERSON_ID"))
                 {
-                    people.nsho = DeserializeResponseData<NshoService>(responseData);
+                    people.nsho = AggregateResponseHelper.DeserializeResponseData<NshoService>(responseData);
                 }
             }
             catch
@@ -190,28 +210,119 @@ namespace cis.Controllers
 
             return true;
         }
-
-        private static T? DeserializeResponseData<T>(JsonElement responseData)
-        {
-            try
-            {
-                return responseData.Deserialize<T>(JsonOptions);
-            }
-            catch
-            {
-                return default;
-            }
-        }
-
         public IActionResult NAME()
         {
             return View();
         }
 
         [HttpPost]
-        public IActionResult NAME(IFormCollection f)
+        public async Task<IActionResult> NAME(IFormCollection f)
         {
-            return View();
+            if (f == null || !f.ContainsKey("spid"))
+            {
+                var sm = new Searchs();
+                sm.errorMessage = "กรุณากรอกเลขประจำตัวประชาชน";
+                return View(sm);
+            }
+            var s = new Searchs();
+            s.errorMessage = f["error"].ToString() ?? "";
+            _logger.LogInformation("Received PID search request with data: {error} {pid}", f["error"].ToString(), f["spid"].ToString());
+            try
+            {
+                // s.setData(f);
+
+                String pidText = f["spid"].ToString();
+                long pid = 0L;
+                if (!long.TryParse(pidText, out pid) || pidText.Length != 13)
+                {
+                    s.errorMessage = "เลขประจำตัวประชาชนไม่ถูกต้อง";
+                    return View(s);
+                }
+                
+                // _logger.LogInformation("Initiating API request for PID: {PID}", pidText);
+                ViewData["spid"] = pidText;
+                s.people = new People();
+                // _logger.LogInformation("Sending API request {people}", s.people);
+                var data = new  
+                {
+                    jobID = "082f70b0-d561-4161-83db-1f0af9ea7885",
+                    data= new [] {
+                        new {
+                            serviceID = 51,
+                            query= new {
+                                limit= f["limit"].ToString() ?? "10",
+                                firstName= f["firstName"].ToString() ?? "",
+                                lastName= f["lastName"].ToString() ?? "",
+                                middleName= f["middleName"].ToString() ?? "",
+                                recordNumber= f["recordNumber"].ToString() ?? ""
+                            }
+                        }
+                    }                    
+                };
+                
+                // _logger.LogInformation("Sending API request {data}", data);
+                var lkToken = User.FindFirst("lktoken")?.Value ?? null;
+                // _logger.LogInformation("Retrieved token from user claims: {token}", lkToken);
+                if (string.IsNullOrWhiteSpace(lkToken))
+                {
+                    s.errorMessage = "ไม่พบ token สำหรับเรียกใช้งานระบบ กรุณาเข้าสู่ระบบใหม่";
+                    return View(s);
+                }
+                var path = "/api/center/request/";
+                // _logger.LogInformation("Sending API request {path} {data} {token}", path, data, lkToken);
+                var response = await api.PostDataAsync<AggregateApiResponse>($"/api/center/request/", data, lkToken );
+                _logger.LogInformation("API response received with status code: {statusCode}", api.statusCode);
+                if (api.statusCode != 200 && api.statusCode != 404)
+                {
+                    s.errorMessage = $"API error: {api.statusCode} {response?.errorMessage ?? "Unknown error"}";
+                    return View(s);
+                }
+                _logger.LogInformation("API response received with data: {response}", response);
+                if (response?.data == null || response.data.Count == 0)
+                {
+                    s.errorMessage = string.IsNullOrWhiteSpace(s.errorMessage)
+                        ? "ไม่พบข้อมูลจาก API"
+                        : s.errorMessage;
+                    return View(s);
+                }
+
+                _logger.LogInformation("API response received with  time: {time}", response.executeTimeMs);
+                foreach (var item in response.data)
+                {
+                    if (item.responseData.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+                        continue;
+
+                    switch (item.serviceID)
+                    {
+                        case 1:
+                            s.people.pop = AggregateResponseHelper.DeserializeResponseData<Pop>(item.responseData) ?? s.people.pop;
+                            break;
+                        case 38:
+                            s.people.house = AggregateResponseHelper.DeserializeResponseData<House>(item.responseData) ?? s.people.house;
+                            break;
+                        case 9:
+                            s.people.rename = AggregateResponseHelper.DeserializeResponseData<Rename>(item.responseData) ?? s.people.rename;
+                            break;
+                        case 12:
+                            s.people.child = AggregateResponseHelper.DeserializeResponseData<Child>(item.responseData) ?? s.people.child;
+                            break;
+                        case 21:
+                            s.people.cardImage = AggregateResponseHelper.DeserializeResponseData<CardImage>(item.responseData) ?? s.people.cardImage;
+                            break;
+                        default:
+                            MapByPayloadShape(item.responseData, s.people);
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "PeopleController.NAME failed");
+                s.errorMessage = ex.Message;
+                return View(s);
+            }
+
+            return View(s);
         }
 
         public IActionResult OLDNAME()

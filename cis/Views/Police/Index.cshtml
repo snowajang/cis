@@ -10,9 +10,19 @@
 
 <div class="card">
     <div class="card-header bg-light">
-        <span class="form-label">ค้นหาด้วยเลขประจำตัวประชาชน</span>
-        <span class="col-3"><input name="spid" id="spid" value="@(Model?.people?.pop?.pid.ToString() ?? ((api.pid_test==0L)?"":api.pid_test.ToString()))" class="pid form-control d-inline-block" style="width: 25%;" /></span>
-        <span><button type="button" class="btn btn-primary" onclick="searchPolice()">ค้นหา</button></span>
+        <form method="post">
+            <span class="form-label">ค้นหาด้วยหมายเลขอาวุธปืน</span>   
+            <span class="col-3">
+                <input 
+                    name="spid" 
+                    value="@(ViewData["spid"])" 
+                    class="pid form-control d-inline-block" 
+                    style="width: 25%;" />
+            </span>
+            <span>
+                <button type="submit" class="btn btn-primary">ค้นหา</button>
+            </span>
+        </form>
     </div>
     <div class="card-body" id="ckan">
         <div id="errorinfo" class="text-center bg-danger text-white rounded @d_none">

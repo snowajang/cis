@@ -111,10 +111,9 @@ namespace cis.Controllers
             {
                 if (login == null)
                 {
-                    Console.WriteLine("Login is null");
                     login = new LoginThaiD();
                     login.error = "ไม่ได้รับการตอบกลับจากระบบ ThaID";
-                    return View(login);
+                    return View("Index", login);
                 }
                 // xติดต่อ lk2 
                 string token="";
@@ -122,7 +121,7 @@ namespace cis.Controllers
                 {
                     if (!string.IsNullOrEmpty(login.error))
                     {
-                        return View(login);
+                        return View("Index", login);
                     }
                     long ipid = long.Parse(login.pid);
                     var api = new Api("https://web-app.bora.dopa.go.th/meetrens");
@@ -143,7 +142,7 @@ namespace cis.Controllers
                         {
                             login.error = "พบปัญหาเชื่อมต่อระบบ";
                         }
-                        return View(login);
+                        return View("Index", login);
                     }
                     token = json?.token ?? "";
                 }
